@@ -1,0 +1,22 @@
+{
+  "title": "Test Album",
+  "cover": "2026-09-06-gregory-house-15.jpeg",
+  "photos": [
+    { "file": "2026-09-06-gregory-house-02.jpeg", "caption": "", "favorite": false },
+    { "file": "2026-09-06-gregory-house-03.jpeg", "caption": "", "favorite": true, "order": 3 },
+    { "file": "2026-09-06-gregory-house-04.jpeg", "caption": "", "favorite": false },
+    { "file": "2026-09-06-gregory-house-05.jpeg", "caption": "", "favorite": true, "order": 4 },
+    { "file": "2026-09-06-gregory-house-06.jpeg", "caption": "", "favorite": false },
+    { "file": "2026-09-06-gregory-house-07.jpeg", "caption": "", "favorite": false },
+    { "file": "2026-09-06-gregory-house-08.jpeg", "caption": "", "favorite": false },
+    { "file": "2026-09-06-gregory-house-09.jpeg", "caption": "", "favorite": true, "order": 5 },
+    { "file": "2026-09-06-gregory-house-10.jpeg", "caption": "", "favorite": false },
+    { "file": "2026-09-06-gregory-house-11.jpeg", "caption": "", "favorite": false },
+    { "file": "2026-09-06-gregory-house-12.jpeg", "caption": "", "favorite": true, "order": 2 },
+    { "file": "2026-09-06-gregory-house-13.jpeg", "caption": "", "favorite": false },
+    { "file": "2026-09-06-gregory-house-14.jpeg", "caption": "", "favorite": false },
+    { "file": "2026-09-06-gregory-house-15.jpeg", "caption": "", "favorite": true, "order": 1 },
+    { "file": "2026-09-06-gregory-house-16.jpeg", "caption": "", "favorite": false, "order": 6 },
+    { "file": "2026-09-06-gregory-house-18.jpeg", "caption": "", "favorite": false }
+  ]
+}
