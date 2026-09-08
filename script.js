@@ -278,6 +278,39 @@ function setUpMasonryTile(item, img) {
 }
 
 let resizeTimeout;
+function updateCarouselNav() {
+  const fade = document.getElementById('carousel-fade');
+  const prevBtn = document.getElementById('carousel-prev');
+  const nextBtn = document.getElementById('carousel-next');
+  if (!albumsGrid) return;
+  const maxScroll = albumsGrid.scrollWidth - albumsGrid.clientWidth;
+  const atStart = albumsGrid.scrollLeft <= 24;
+  const atEnd = maxScroll <= 1 || albumsGrid.scrollLeft >= maxScroll - 4;
+  if (fade) fade.classList.toggle('is-hidden', atEnd);
+  if (prevBtn) prevBtn.classList.toggle('is-hidden', atStart);
+  if (nextBtn) nextBtn.classList.toggle('is-hidden', atEnd);
+}
+
+let carouselNavFrame = null;
+albumsGrid.addEventListener('scroll', () => {
+  if (carouselNavFrame) cancelAnimationFrame(carouselNavFrame);
+  carouselNavFrame = requestAnimationFrame(updateCarouselNav);
+});
+window.addEventListener('resize', updateCarouselNav);
+
+const carouselPrevBtn = document.getElementById('carousel-prev');
+const carouselNextBtn = document.getElementById('carousel-next');
+if (carouselPrevBtn) {
+  carouselPrevBtn.addEventListener('click', () => {
+    albumsGrid.scrollBy({ left: -albumsGrid.clientWidth * 0.9, behavior: 'smooth' });
+  });
+}
+if (carouselNextBtn) {
+  carouselNextBtn.addEventListener('click', () => {
+    albumsGrid.scrollBy({ left: albumsGrid.clientWidth * 0.9, behavior: 'smooth' });
+  });
+}
+
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimeout);
   resizeTimeout = setTimeout(() => {
@@ -387,6 +420,8 @@ function renderHome() {
     item.appendChild(label);
     albumsGrid.appendChild(item);
   });
+
+  updateCarouselNav();
 
   favorites.forEach((photo, index) => {
     favoritesGrid.appendChild(createPhotoTile(photo, index, favorites));

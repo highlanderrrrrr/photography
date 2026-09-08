@@ -76,7 +76,12 @@
 
       <section id="albums-section">
         <h2 class="section-label">Collections</h2>
-        <div id="albums-grid" class="album-carousel" aria-live="polite"></div>
+        <div class="carousel-wrap">
+          <div id="albums-grid" class="album-carousel" aria-live="polite"></div>
+          <div class="carousel-fade" id="carousel-fade" aria-hidden="true"></div>
+          <button class="carousel-arrow carousel-arrow-prev" id="carousel-prev" aria-label="Scroll left">&#8249;</button>
+          <button class="carousel-arrow carousel-arrow-next" id="carousel-next" aria-label="Scroll right">&#8250;</button>
+        </div>
       </section>
 
       <section id="favorites-section">
