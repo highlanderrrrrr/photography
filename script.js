@@ -132,14 +132,14 @@ function route() {
 function showHome() {
   albumView.hidden = true;
   homeView.hidden = false;
-  document.title = 'Lee — Selected Works';
+  document.title = 'Lee\'s Photography';
   renderHome();
 }
 
 function showAlbum(album) {
   homeView.hidden = true;
   albumView.hidden = false;
-  document.title = `${album.title} — Lee`;
+  document.title = album.title + ' — Lee\'s Photography';
   albumTitleEl.textContent = album.title;
   renderAlbumGrid(album);
 }
