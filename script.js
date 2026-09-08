@@ -165,7 +165,16 @@ function getFavorites() {
       if (photo.favorite) favorites.push(photo);
     });
   });
-  return sortPhotos(favorites);
+  return favorites;
+}
+
+function shuffle(list) {
+  const arr = list.slice();
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
 }
 
 // Full raw EXIF parsing helper
@@ -304,7 +313,7 @@ function renderHome() {
   emptyState.hidden = true;
 
   const albums = data.albums || [];
-  const favorites = getFavorites();
+  const favorites = shuffle(getFavorites());
 
   albumsSection.hidden = albums.length === 0;
   favoritesSection.hidden = favorites.length === 0;
