@@ -33,6 +33,8 @@ const lbExif = document.getElementById('lb-exif');
 const lbClose = document.getElementById('lb-close');
 const lbPrev = document.getElementById('lb-prev');
 const lbNext = document.getElementById('lb-next');
+const slideshowAudio = document.getElementById('slideshow-audio');
+const lbMuteBtn = document.getElementById('lb-mute');
 
 fetch('albums.json')
   .then((res) => {
@@ -175,6 +177,66 @@ function shuffle(list) {
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
+}
+
+function getAllPhotos() {
+  const all = [];
+  (data.albums || []).forEach((album) => {
+    (album.photos || []).forEach((photo) => all.push(photo));
+  });
+  return all;
+}
+
+let slideshowActive = false;
+let slideshowTimer = null;
+const SLIDESHOW_INTERVAL = 5000;
+
+function resetSlideshowTimer() {
+  clearTimeout(slideshowTimer);
+  if (!slideshowActive) return;
+  slideshowTimer = setTimeout(showNext, SLIDESHOW_INTERVAL);
+}
+
+function startSlideshow() {
+  const pool = shuffle(getAllPhotos());
+  if (pool.length === 0) return;
+  slideshowActive = true;
+  openLightbox(pool, 0);
+  resetSlideshowTimer();
+
+  if (slideshowAudio) {
+    slideshowAudio.volume = 0.4; // modest — visitor can raise/lower via their own device
+    slideshowAudio.muted = false;
+    slideshowAudio.currentTime = 0;
+    slideshowAudio.play().catch(() => {}); // ignore failures (e.g. no track added yet)
+    updateMuteButtonLabel();
+    if (lbMuteBtn) lbMuteBtn.hidden = false;
+  }
+}
+
+function stopSlideshow() {
+  slideshowActive = false;
+  clearTimeout(slideshowTimer);
+  slideshowTimer = null;
+  if (slideshowAudio) {
+    slideshowAudio.pause();
+    slideshowAudio.currentTime = 0;
+  }
+  if (lbMuteBtn) lbMuteBtn.hidden = true;
+}
+
+function updateMuteButtonLabel() {
+  if (!lbMuteBtn || !slideshowAudio) return;
+  lbMuteBtn.textContent = slideshowAudio.muted ? '\u{1F507}' : '\u{1F50A}';
+  lbMuteBtn.setAttribute('aria-label', slideshowAudio.muted ? 'Unmute music' : 'Mute music');
+}
+
+function preloadNextPhoto() {
+  if (!currentList.length) return;
+  const next = currentList[(currentIndex + 1) % currentList.length];
+  if (!next) return;
+  const img = new Image();
+  img.src = next.file;
 }
 
 // Full raw EXIF parsing helper
@@ -506,6 +568,7 @@ function openLightbox(list, index) {
 function closeLightbox() {
   lightbox.hidden = true;
   document.body.style.overflow = '';
+  stopSlideshow();
 }
 
 async function showCurrent() {
@@ -515,23 +578,46 @@ async function showCurrent() {
   lbCaption.textContent = photo.caption || '';
   lbExif.textContent = '';
 
+  preloadNextPhoto();
+
   const metaString = await getPhotoMeta(photo);
   lbExif.textContent = metaString || '';
 }
 
 function showNext() {
-  currentIndex = (currentIndex + 1) % currentList.length;
+  currentIndex += 1;
+  if (currentIndex >= currentList.length) {
+    currentIndex = 0;
+    if (slideshowActive) {
+      currentList = shuffle(currentList); // new lap, fresh order — same photos, no back-to-back repeats
+    }
+  }
   showCurrent();
+  resetSlideshowTimer();
 }
 
 function showPrev() {
   currentIndex = (currentIndex - 1 + currentList.length) % currentList.length;
   showCurrent();
+  resetSlideshowTimer();
 }
 
 lbClose.addEventListener('click', closeLightbox);
 lbNext.addEventListener('click', showNext);
 lbPrev.addEventListener('click', showPrev);
+
+const slideshowBtn = document.getElementById('slideshow-btn');
+if (slideshowBtn) {
+  slideshowBtn.addEventListener('click', startSlideshow);
+}
+
+if (lbMuteBtn) {
+  lbMuteBtn.addEventListener('click', () => {
+    if (!slideshowAudio) return;
+    slideshowAudio.muted = !slideshowAudio.muted;
+    updateMuteButtonLabel();
+  });
+}
 
 lightbox.addEventListener('click', (e) => {
   if (e.target === lightbox) closeLightbox();

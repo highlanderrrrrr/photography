@@ -23,6 +23,7 @@
       <a href="#hero-section" class="nav-link">Featured</a>
       <a href="#albums-section" class="nav-link">Collections</a>
       <a href="#favorites-section" class="nav-link">Selected</a>
+      <button id="slideshow-btn" type="button" class="nav-link nav-link-btn">Play Slideshow</button>
       <a href="https://www.youtube.com/@OverlandOutAndAbout" target="_blank" rel="noopener noreferrer" class="nav-link nav-link-ext">Channel &nearr;</a>
       <span class="nav-pipe">|</span>
       <p id="stats-line" class="stats-line" hidden></p>
@@ -103,6 +104,7 @@
 
   <div id="lightbox" class="lightbox" hidden>
     <button class="lb-close" id="lb-close" aria-label="Close">&times;</button>
+    <button class="lb-mute" id="lb-mute" aria-label="Mute music" hidden>&#128266;</button>
     <button class="lb-nav lb-prev" id="lb-prev" aria-label="Previous photo">&#8249;</button>
     <img class="lb-image" id="lb-image" src="" alt="">
     <button class="lb-nav lb-next" id="lb-next" aria-label="Next photo">&#8250;</button>
@@ -110,6 +112,7 @@
       <div class="lb-exif" id="lb-exif"></div>
       <p class="lb-caption" id="lb-caption"></p>
     </div>
+    <audio id="slideshow-audio" src="music/slideshow.mp3" loop preload="none"></audio>
   </div>
 
   <script src="script.js?v=26"></script>
