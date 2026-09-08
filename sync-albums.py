@@ -78,7 +78,14 @@ def main():
         return
 
     with open(albums_json_path) as f:
-        album_dirs = json.load(f)
+        payload = json.load(f)
+
+    if isinstance(payload, list):
+        album_dirs = payload
+    elif isinstance(payload, dict):
+        album_dirs = payload.get("albums", [])
+    else:
+        album_dirs = []
 
     print(f"Syncing {len(album_dirs)} album(s)...")
     for dir_name in album_dirs:
