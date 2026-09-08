@@ -1,6 +1,6 @@
 {
   "title": "Ghost",
-  "cover": ""DSC_2167.JPG"",
+  "cover": ""DSC_2167.JPG",
   "photos": [
     {"file": "DSC_2117.JPG"},
     {"file": "DSC_2144.JPG"},
@@ -10,6 +10,6 @@
     {"file": "DSC_2202.JPG"},
     {"file": "DSC_2250.JPG"},
     {"file": "DSC_2251.JPG"},
-    {"file": "DSC_2253.JPG", , "favorite": true}
+    {"file": "DSC_2253.JPG", "favorite": true}
   ]
 }
