@@ -2,14 +2,11 @@
   "title": "Ghost",
   "cover": "DSC_2167.JPG",
   "photos": [
-    {"file": "DSC_2117.JPG"},
     {"file": "DSC_2144.JPG"},
     {"file": "DSC_2153.JPG"},
     {"file": "DSC_2165.JPG"},
     {"file": "DSC_2167.JPG"},
     {"file": "DSC_2202.JPG"},
-    {"file": "DSC_2250.JPG"},
-    {"file": "DSC_2251.JPG"},
     {"file": "DSC_2253.JPG", "favorite": true}
   ]
 }
