@@ -635,6 +635,8 @@ body {
   font-size: 0.75rem;
   letter-spacing: 0.05em;
   margin: 0 0 0.35rem;
+  min-height: 1.1rem;
+  line-height: 1.1rem;
 }
 
 .lb-close, .lb-nav, .lb-mute {
