@@ -3,11 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lee's Photography</title>
+
+  <title>Lee Sagi — Photography</title>
+  <meta name="description" content="Photographs by Lee Sagi. Expedition, landscape, street and candid documentary work from California and the American West.">
+
+  <!-- Social / link previews -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Lee Sagi Photography">
+  <meta property="og:title" content="Lee Sagi — Photography">
+  <meta property="og:description" content="Expedition, landscape, street and candid documentary photographs.">
+  <meta property="og:url" content="https://leesagi.com/">
+  <meta property="og:image" content="https://leesagi.com/images/misc/2026-09-09-misc-01.jpeg">
+  <meta name="twitter:card" content="summary_large_image">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=25">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=37">
   <script src="https://cdn.jsdelivr.net/npm/exifr/dist/full.umd.js"></script>
 
   <link rel="icon" type="image/png" href="/favicon/favicon-96x96.png" sizes="96x96" />
@@ -15,103 +27,120 @@
   <link rel="shortcut icon" href="/favicon/favicon.ico" />
   <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
   <link rel="manifest" href="/favicon/site.webmanifest" />
-
 </head>
 <body>
 
   <header class="site-header" id="site-header">
-    <div class="header-brand">
-      <a href="#" class="wordmark-link"><h1 class="wordmark">Lee</h1></a>
-      <span class="brand-divider">/</span>
-      <p class="tagline">Expedition, landscape, and candid documentary.</p>
-    </div>
+    <div class="header-inner wrap">
+      <div class="header-brand">
+        <a href="#" class="wordmark-link"><h1 class="wordmark">Lee Sagi</h1></a>
+        <p class="tagline">Expedition, landscape, and candid documentary.</p>
+      </div>
 
-    <nav class="header-nav">
-      <a href="#hero-section" class="nav-link">Featured</a>
-      <a href="#albums-section" class="nav-link">Collections</a>
-      <a href="#favorites-section" class="nav-link">Selected</a>
-      <button id="slideshow-btn" type="button" class="nav-link nav-link-btn">Play Slideshow</button>
-      <a href="https://www.youtube.com/@OverlandOutAndAbout" target="_blank" rel="noopener noreferrer" class="nav-link nav-link-ext">Channel &nearr;</a>
-      <span class="nav-pipe">|</span>
-      <p id="stats-line" class="stats-line" hidden></p>
-    </nav>
+      <nav class="header-nav">
+        <a href="#albums-section" class="nav-link">Collections</a>
+        <a href="#favorites-section" class="nav-link">Selected</a>
+        <button id="slideshow-btn" type="button" class="nav-link nav-link-btn">Slideshow</button>
+        <a href="#about" class="nav-link">About</a>
+        <a href="https://www.youtube.com/@OverlandOutAndAbout" target="_blank" rel="noopener noreferrer" class="nav-link nav-link-ext">Channel &nearr;</a>
+      </nav>
+    </div>
   </header>
 
   <main>
     <div id="home-view">
-      <!-- Asymmetric Editorial Split Hero -->
+
       <section id="hero-section" class="hero-section" hidden>
-        <div class="hero-split-container">
-          <div class="hero-frame" id="hero-frame">
-            <img id="hero-image" src="" alt="Featured photograph" fetchpriority="high">
-            <div class="hero-frame-badge">Featured</div>
+        <div class="hero-frame" id="hero-frame" role="button" tabindex="0" aria-label="Open featured photograph">
+          <img id="hero-image" src="" alt="Featured photograph" fetchpriority="high">
+          <div class="hero-scrim" aria-hidden="true"></div>
+          <div class="hero-overlay">
+            <div class="wrap hero-overlay-inner">
+              <div class="hero-overlay-text">
+                <span class="eyebrow" id="hero-eyebrow">Featured</span>
+                <p class="hero-desc" id="hero-sidebar-caption" hidden></p>
+                <p class="hero-meta">
+                  <span id="hero-meta-camera">&mdash;</span>
+                  <span class="dot" aria-hidden="true">&middot;</span>
+                  <span id="hero-meta-lens">&mdash;</span>
+                  <span class="dot" aria-hidden="true">&middot;</span>
+                  <span id="hero-meta-exposure">&mdash;</span>
+                  <span class="dot" aria-hidden="true">&middot;</span>
+                  <span id="hero-meta-iso">&mdash;</span>
+                </p>
+              </div>
+              <button class="hero-expand-btn" id="hero-expand-btn">
+                <span>View full frame</span>
+                <span class="btn-arrow" aria-hidden="true">&rarr;</span>
+              </button>
+            </div>
           </div>
-
-          <aside class="hero-sidebar">
-            <div class="hero-sidebar-header">
-              <span class="editorial-index">ARCHIVE // 01</span>
-              <h2 class="editorial-title" id="hero-sidebar-title">Featured Work</h2>
-            </div>
-
-            <div class="editorial-metadata-panel">
-              <div class="meta-row">
-                <span class="meta-label">Camera</span>
-                <span class="meta-value" id="hero-meta-camera">—</span>
-              </div>
-              <div class="meta-row">
-                <span class="meta-label">Optics</span>
-                <span class="meta-value" id="hero-meta-lens">—</span>
-              </div>
-              <div class="meta-row">
-                <span class="meta-label">Exposure</span>
-                <span class="meta-value" id="hero-meta-exposure">—</span>
-              </div>
-              <div class="meta-row">
-                <span class="meta-label">ISO</span>
-                <span class="meta-value" id="hero-meta-iso">—</span>
-              </div>
-            </div>
-
-            <p class="editorial-caption" id="hero-sidebar-caption"></p>
-
-            <button class="hero-expand-btn" id="hero-expand-btn">
-              <span>View Full Frame</span>
-              <span class="btn-arrow">&rarr;</span>
-            </button>
-          </aside>
         </div>
       </section>
 
       <section id="albums-section">
-        <h2 class="section-label">Collections</h2>
-        <div class="carousel-wrap">
-          <div id="albums-grid" class="album-carousel" aria-live="polite"></div>
-          <div class="carousel-fade" id="carousel-fade" aria-hidden="true"></div>
-          <button class="carousel-arrow carousel-arrow-prev" id="carousel-prev" aria-label="Scroll left">&#8249;</button>
-          <button class="carousel-arrow carousel-arrow-next" id="carousel-next" aria-label="Scroll right">&#8250;</button>
+        <div class="wrap">
+          <div class="section-head">
+            <h2 class="section-label">Collections</h2>
+            <p id="stats-line" class="stats-line" hidden></p>
+          </div>
+          <div id="albums-grid" class="album-grid" aria-live="polite"></div>
         </div>
       </section>
 
       <section id="favorites-section">
-        <h2 class="section-label">Selected Photographs</h2>
-        <div id="favorites-grid" class="photo-grid" aria-live="polite"></div>
+        <div class="wrap">
+          <div class="section-head">
+            <h2 class="section-label">Selected Photographs</h2>
+          </div>
+          <div id="favorites-grid" class="photo-grid" aria-live="polite"></div>
+        </div>
       </section>
     </div>
 
     <div id="album-view" hidden>
-      <div class="album-header">
-        <a href="#" id="back-link" class="back-link">&larr; Back to collections</a>
-        <h2 id="album-title" class="section-label album-title"></h2>
+      <div class="wrap">
+        <div class="album-header">
+          <a href="#" id="back-link" class="back-link">&larr; Back to collections</a>
+          <h2 id="album-title" class="album-title"></h2>
+        </div>
+        <div id="album-grid" class="photo-grid" aria-live="polite"></div>
       </div>
-      <div id="album-grid" class="photo-grid" aria-live="polite"></div>
     </div>
 
     <p id="empty-state" class="empty-state" hidden></p>
   </main>
 
+  <footer class="site-footer" id="about">
+    <div class="wrap footer-inner">
+      <div class="footer-col footer-about">
+        <h2 class="section-label">About</h2>
+        <p>
+          I'm Lee Sagi. I photograph what I run into — backcountry tracks and desert
+          camps, the streets near home, people I know, and a Weimaraner named Ghost.
+          This is a personal archive rather than a commercial portfolio: everything here
+          is here because I liked the frame, not because it's for sale.
+        </p>
+        <p class="footer-gear">Shot on a Nikon D7500. Based in the East Bay, California.</p>
+      </div>
+
+      <div class="footer-col">
+        <h2 class="section-label">Elsewhere</h2>
+        <ul class="footer-links">
+          <li><a href="https://www.youtube.com/@OverlandOutAndAbout" target="_blank" rel="noopener noreferrer">Overland Out &amp; About &nearr;</a></li>
+          <li><a href="mailto:REPLACE_WITH_YOUR_EMAIL@example.com">Email</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="wrap footer-bottom">
+      <span>&copy; <span id="year"></span> Lee Sagi. All photographs are my own.</span>
+    </div>
+  </footer>
+
   <div id="lightbox" class="lightbox" hidden>
     <button class="lb-close" id="lb-close" aria-label="Close">&times;</button>
-    <button class="lb-mute" id="lb-mute" aria-label="Mute music" hidden>&#128266;</button>
+    <button class="lb-mute" id="lb-mute" aria-label="Unmute music" hidden>&#128263;</button>
     <button class="lb-nav lb-prev" id="lb-prev" aria-label="Previous photo">&#8249;</button>
     <img class="lb-image" id="lb-image" src="" alt="">
     <button class="lb-nav lb-next" id="lb-next" aria-label="Next photo">&#8250;</button>
@@ -122,6 +151,6 @@
     <audio id="slideshow-audio" src="music/slideshow.mp3" loop preload="none"></audio>
   </div>
 
-  <script src="script.js?v=26"></script>
+  <script src="script.js?v=37"></script>
 </body>
 </html>

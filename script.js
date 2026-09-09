@@ -134,14 +134,14 @@ function route() {
 function showHome() {
   albumView.hidden = true;
   homeView.hidden = false;
-  document.title = 'Lee\'s Photography';
+  document.title = 'Lee Sagi \u2014 Photography';
   renderHome();
 }
 
 function showAlbum(album) {
   homeView.hidden = true;
   albumView.hidden = false;
-  document.title = album.title + ' — Lee\'s Photography';
+  document.title = album.title + ' — Lee Sagi';
   albumTitleEl.textContent = album.title;
   renderAlbumGrid(album);
 }
@@ -206,7 +206,7 @@ function startSlideshow() {
 
   if (slideshowAudio) {
     slideshowAudio.volume = 0.4; // modest — visitor can raise/lower via their own device
-    slideshowAudio.muted = false;
+    slideshowAudio.muted = true; // starts silent; visitor opts in via the speaker button
     slideshowAudio.currentTime = 0;
     slideshowAudio.play().catch(() => {}); // ignore failures (e.g. no track added yet)
     updateMuteButtonLabel();
@@ -340,38 +340,6 @@ function setUpMasonryTile(item, img) {
 }
 
 let resizeTimeout;
-function updateCarouselNav() {
-  const fade = document.getElementById('carousel-fade');
-  const prevBtn = document.getElementById('carousel-prev');
-  const nextBtn = document.getElementById('carousel-next');
-  if (!albumsGrid) return;
-  const maxScroll = albumsGrid.scrollWidth - albumsGrid.clientWidth;
-  const atStart = albumsGrid.scrollLeft <= 24;
-  const atEnd = maxScroll <= 1 || albumsGrid.scrollLeft >= maxScroll - 4;
-  if (fade) fade.classList.toggle('is-hidden', atEnd);
-  if (prevBtn) prevBtn.classList.toggle('is-hidden', atStart);
-  if (nextBtn) nextBtn.classList.toggle('is-hidden', atEnd);
-}
-
-let carouselNavFrame = null;
-albumsGrid.addEventListener('scroll', () => {
-  if (carouselNavFrame) cancelAnimationFrame(carouselNavFrame);
-  carouselNavFrame = requestAnimationFrame(updateCarouselNav);
-});
-window.addEventListener('resize', updateCarouselNav);
-
-const carouselPrevBtn = document.getElementById('carousel-prev');
-const carouselNextBtn = document.getElementById('carousel-next');
-if (carouselPrevBtn) {
-  carouselPrevBtn.addEventListener('click', () => {
-    albumsGrid.scrollBy({ left: -albumsGrid.clientWidth * 0.9, behavior: 'smooth' });
-  });
-}
-if (carouselNextBtn) {
-  carouselNextBtn.addEventListener('click', () => {
-    albumsGrid.scrollBy({ left: albumsGrid.clientWidth * 0.9, behavior: 'smooth' });
-  });
-}
 
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimeout);
@@ -420,6 +388,9 @@ function renderHome() {
 
     const openHero = () => openLightbox([heroTarget], 0);
     heroFrame.onclick = openHero;
+    heroFrame.onkeydown = (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openHero(); }
+    };
     if (heroExpandBtn) heroExpandBtn.onclick = openHero;
 
     // Sidebar text & EXIF population
@@ -438,11 +409,11 @@ function renderHome() {
 
     parseRawExif(heroTarget.file).then((tags) => {
       if (tags) {
-        if (heroMetaCamera) heroMetaCamera.textContent = tags.Model || tags.Make || 'Nikon Digital';
+        if (heroMetaCamera) heroMetaCamera.textContent = tags.Model || tags.Make || '\u2014';
         if (heroMetaLens) {
           const fl = tags.FocalLength ? `${Math.round(tags.FocalLength)}mm` : '';
           const fn = tags.FNumber ? `ƒ/${tags.FNumber}` : '';
-          heroMetaLens.textContent = [fl, fn].filter(Boolean).join(' ') || (tags.LensModel || 'Prime');
+          heroMetaLens.textContent = [fl, fn].filter(Boolean).join(' ') || tags.LensModel || '\u2014';
         }
         if (heroMetaExposure) {
           if (tags.ExposureTime) {
@@ -461,7 +432,7 @@ function renderHome() {
 
   albums.forEach((album, index) => {
     const item = document.createElement('a');
-    item.className = 'gallery-item album-item is-visible';
+    item.className = 'album-item';
     item.href = '#album/' + encodeURIComponent(album.id);
 
     const img = document.createElement('img');
@@ -475,15 +446,14 @@ function renderHome() {
     const count = album.photos.length;
     const countLabel = count === 1 ? '1 photo' : `${count} photos`;
     label.innerHTML = `
-      <span style="font-family: var(--mono-font); font-size: 0.65rem; color: rgba(255,255,255,0.4); letter-spacing: 0.15em; margin-bottom: 0.25rem;">ROLL // ${String(index + 1).padStart(2, '0')}</span>
-      <span class="album-name">${album.title}</span>
-      <span class="album-count">${countLabel}</span>
+      <span class="album-name"></span>
+      <span class="album-count"></span>
     `;
+    label.querySelector('.album-name').textContent = album.title;
+    label.querySelector('.album-count').textContent = countLabel;
     item.appendChild(label);
     albumsGrid.appendChild(item);
   });
-
-  updateCarouselNav();
 
   favorites.forEach((photo, index) => {
     favoritesGrid.appendChild(createPhotoTile(photo, index, favorites));
@@ -519,11 +489,6 @@ function createPhotoTile(photo, index, list) {
   const overlay = document.createElement('div');
   overlay.className = 'item-overlay';
 
-  const topBox = document.createElement('div');
-  topBox.className = 'overlay-top';
-  topBox.innerHTML = `<span class="overlay-frame-num">&#9650; ${String(index + 1).padStart(2, '0')}A</span>`;
-  overlay.appendChild(topBox);
-
   const bottomBox = document.createElement('div');
   bottomBox.className = 'overlay-bottom';
 
@@ -538,9 +503,18 @@ function createPhotoTile(photo, index, list) {
     bottomBox.appendChild(captionEl);
   }
 
-  getPhotoMeta(photo).then((metaString) => {
-    if (metaString) metaEl.textContent = metaString;
-  });
+  // EXIF is fetched on first hover/focus only. Fetching it for every tile at
+  // render time downloaded part of each full-size file on page load.
+  let metaRequested = false;
+  const requestMeta = () => {
+    if (metaRequested) return;
+    metaRequested = true;
+    getPhotoMeta(photo).then((metaString) => {
+      if (metaString) metaEl.textContent = metaString;
+    });
+  };
+  item.addEventListener('mouseenter', requestMeta, { once: true });
+  item.addEventListener('focus', requestMeta, { once: true });
 
   overlay.appendChild(bottomBox);
   item.appendChild(overlay);
@@ -623,6 +597,29 @@ lightbox.addEventListener('click', (e) => {
   if (e.target === lightbox) closeLightbox();
 });
 
+// Swipe navigation (touch devices have no arrow-key or hover affordance)
+let touchStartX = 0;
+let touchStartY = 0;
+let touchTracking = false;
+
+lightbox.addEventListener('touchstart', (e) => {
+  if (e.touches.length !== 1) { touchTracking = false; return; }
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+  touchTracking = true;
+}, { passive: true });
+
+lightbox.addEventListener('touchend', (e) => {
+  if (!touchTracking) return;
+  touchTracking = false;
+  const touch = e.changedTouches[0];
+  if (!touch) return;
+  const dx = touch.clientX - touchStartX;
+  const dy = touch.clientY - touchStartY;
+  if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+  if (dx < 0) showNext(); else showPrev();
+}, { passive: true });
+
 document.addEventListener('keydown', (e) => {
   if (lightbox.hidden) return;
   if (e.key === 'Escape') closeLightbox();
@@ -643,3 +640,6 @@ document.querySelectorAll('.header-nav a[href^="#"]').forEach((anchor) => {
     }
   });
 });
+
+const yearEl = document.getElementById('year');
+if (yearEl) yearEl.textContent = new Date().getFullYear();
