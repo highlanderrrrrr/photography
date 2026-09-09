@@ -1,8 +1,11 @@
 {
   "title": "Miscellaneous",
-  "cover": "DSC_2337.jpeg",
+  "cover": "2026-09-09-misc-03.jpeg",
   "photos": [
-    {"file": "DSC_2337.jpeg", "favorite": true},
-    {"file": "DSC_2346.jpeg"}
+    {"file": "DSC_2337.jpeg"},
+    {"file": "DSC_2346.jpeg"},
+    {"file": "2026-09-09-misc-01.jpeg"},
+    {"file": "2026-09-09-misc-03.jpeg"},
+    {"file": "2026-09-09-misc-06.jpeg", "favorite": true}
   ]
 }
