@@ -118,6 +118,17 @@ function updateStatsLine() {
   statsEl.hidden = false;
 }
 
+// Hash routing swaps views without a page load, so the browser keeps the old
+// scroll offset. Reset it explicitly on every view change.
+function resetScroll(target) {
+  const y = target ? Math.max(target.getBoundingClientRect().top + window.scrollY - 80, 0) : 0;
+  try {
+    window.scrollTo({ top: y, left: 0, behavior: 'instant' });
+  } catch (err) {
+    window.scrollTo(0, y); // older browsers: no 'instant' option
+  }
+}
+
 function route() {
   const hash = location.hash;
   if (hash.startsWith('#album/')) {
@@ -132,18 +143,22 @@ function route() {
 }
 
 function showHome() {
+  const cameFromAlbum = !albumView.hidden;
   albumView.hidden = true;
   homeView.hidden = false;
   document.title = 'Lee Sagi \u2014 Photography';
   renderHome();
+  if (cameFromAlbum) resetScroll(albumsSection);
 }
 
 function showAlbum(album) {
+  const wasHome = !homeView.hidden;
   homeView.hidden = true;
   albumView.hidden = false;
   document.title = album.title + ' — Lee Sagi';
   albumTitleEl.textContent = album.title;
   renderAlbumGrid(album);
+  if (wasHome) resetScroll();
 }
 
 function sortPhotos(list) {
