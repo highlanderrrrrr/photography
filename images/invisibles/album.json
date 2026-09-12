@@ -2,8 +2,21 @@
   "title": "Invisibles",
   "cover": "DSC_2369.jpeg",
   "photos": [
-    {"file": "DSC_2369.jpeg", "favorite": true},
+    {"file": "DSC_2369.jpeg"},
     {"file": "DSC_2375.jpeg"},
-    {"file": "DSC_2380.jpeg"}
+    {"file": "DSC_2380.jpeg"},
+    {"file": "2026-09-011-streets-plus-home-17.jpeg"},
+    {"file": "2026-09-011-streets-plus-home-21.jpeg"},
+    {"file": "2026-09-011-streets-plus-home-24.jpeg"},
+    {"file": "2026-09-011-streets-plus-home-25.jpeg"},
+    {"file": "2026-09-011-streets-plus-home-27.jpeg"},
+    {"file": "2026-09-011-streets-plus-home-29.jpeg"},
+    {"file": "2026-09-011-streets-plus-home-31.jpeg"},
+    {"file": "2026-09-011-streets-plus-home-35.jpeg", "favorite": true},
+    {"file": "2026-09-011-streets-plus-home-36.jpeg"},
+    {"file": "2026-09-011-streets-plus-home-38.jpeg"},
+    {"file": "2026-09-011-streets-plus-home-39.jpeg"},
+    {"file": "2026-09-011-streets-plus-home-43.jpeg"},
+    {"file": "2026-09-011-streets-plus-home-45.jpeg"}
   ]
 }

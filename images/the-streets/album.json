@@ -1,14 +1,17 @@
 {
   "title": "The Streets",
-  "cover": "DSC_2368.jpeg",
+  "cover": "2026-09-011-streets-plus-home-15.jpeg",
   "photos": [
-    {"file": "DSC_2340.jpeg", "favorite": true},
+    {"file": "DSC_2340.jpeg"},
     {"file": "DSC_2360.jpeg"},
     {"file": "DSC_2363.jpeg"},
     {"file": "DSC_2368.jpeg"},
     {"file": "DSC_2373.jpeg"},
     {"file": "DSC_2387.jpeg"},
     {"file": "DSC_2388.jpeg"},
-    {"file": "DSC_2390.jpeg"}
+    {"file": "DSC_2390.jpeg"},
+    {"file": "2026-09-011-streets-plus-home-15.jpeg"},
+    {"file": "2026-09-011-streets-plus-home-23.jpeg", "favorite": true},
+    {"file": "2026-09-011-streets-plus-home-32.jpeg"}
   ]
 }

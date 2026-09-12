@@ -531,8 +531,16 @@ img { max-width: 100%; }
 
 .footer-inner {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(200px, 1fr);
+  grid-template-columns: auto minmax(0, 2fr) minmax(200px, 1fr);
   gap: 2.5rem 4rem;
+  align-items: start;
+}
+
+.footer-logo {
+  height: 132px;
+  width: auto;
+  display: block;
+  opacity: 0.92;
 }
 
 .footer-col .section-label { display: block; margin-bottom: 1rem; }
@@ -638,6 +646,7 @@ img { max-width: 100%; }
   .header-brand { flex-direction: column; gap: 0.3rem; }
   .tagline { border-left: none; padding-left: 0; }
   .footer-inner { grid-template-columns: 1fr; }
+  .footer-logo { height: 96px; }
 }
 
 @media (max-width: 700px) {
