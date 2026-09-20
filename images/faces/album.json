@@ -3,8 +3,8 @@
   "cover": "DSC_2334.jpeg",
   "photos": [
     {"file": "DSC_2334.jpeg"},
-    {"file": "DSC_2711.jpeg", "favorite": true},
+    {"file": "DSC_2711.jpeg"},
     {"file": "2026-09-16-driving-photography-22.jpg"},
-    {"file": "2026-09-011-streets-plus-home-08.jpg"}
+    {"file": "2026-09-011-streets-plus-home-08.jpg", "favorite": true}
   ]
 }
