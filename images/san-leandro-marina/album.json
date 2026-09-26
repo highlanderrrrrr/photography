@@ -1,14 +1,8 @@
 {
   "title": "San Leandro Marina",
-  "cover": "DSC_2972.jpg",
+  "cover": "DSC_3157.jpg",
   "photos": [
-    {"file": "DSC_2144.JPG"},
-    {"file": "DSC_2153.JPG", "favorite": true},
-    {"file": "DSC_2165.JPG"},
-    {"file": "DSC_2167.JPG"},
-    {"file": "DSC_2250.JPG"},
-    {"file": "DSC_2972.jpg"},
-    {"file": "DSC_3157.jpg"},
+    {"file": "DSC_3157.jpg", "favorite": true},
     {"file": "DSC_3158.jpg"},
     {"file": "DSC_3160.jpg"},
     {"file": "DSC_3168.jpg"},
