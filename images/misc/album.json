@@ -6,7 +6,7 @@
     {"file": "DSC_2346.jpeg"},
     {"file": "2026-09-09-misc-01.jpeg", "caption": "Lone Star - saw this eagle surveying his territory while walking the dog"},
     {"file": "2026-09-09-misc-03.jpeg"},
-    {"file": "2026-09-09-misc-06.jpeg", "favorite": true, "order": 1},
+    {"file": "2026-09-09-misc-06.jpeg"},
     {"file": "2026-09-011-streets-plus-home-26.jpeg", "order": 2},
     {"file": "2026-09-16-driving-photography-02.jpg"},
     {"file": "2026-09-16-driving-photography-04.jpg"},
@@ -17,7 +17,7 @@
     {"file": "2026-10-05-pacifica-18.jpg"},
     {"file": "2026-10-05-pacifica-46.jpg"},
     {"file": "2026-10-05-pacifica-57.jpg"},
-    {"file": "2026-10-05-pacifica-63.jpg"},
+    {"file": "2026-10-05-pacifica-63.jpg", "favorite": true, "order": 1},
     {"file": "2026-10-05-pacifica-65.jpg"}
   ]
 }
