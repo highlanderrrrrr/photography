@@ -399,6 +399,7 @@ function renderHome() {
   const heroTarget = data.featured || favorites[0] || (albums[0] && albums[0].photos[0]);
   if (heroTarget) {
     heroImage.src = heroTarget.file;
+    heroImage.style.objectPosition = heroTarget.position || '';
     heroSection.hidden = false;
 
     const openHero = () => openLightbox([heroTarget], 0);

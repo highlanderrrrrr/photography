@@ -1,0 +1,11 @@
+{
+  "title": "Birds",
+  "cover": "2026-10-05-pacifica-65.jpg",
+  "photos": [
+    {"file": "2026-10-05-pacifica-63.jpg", "favorite": true},
+    {"file": "2026-10-05-pacifica-65.jpg", "favorite": true},
+    {"file": "2026-10-05-pacifica-18.jpg"},
+    {"file": "2026-10-05-pacifica-57.jpg"},
+    {"file": "2026-09-09-misc-01.jpeg", "caption": "Lone Star - saw this eagle surveying his territory while walking the dog"}
+  ]
+}

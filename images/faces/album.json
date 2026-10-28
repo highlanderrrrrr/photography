@@ -1,11 +1,13 @@
 {
   "title": "Faces",
-  "cover": "DSC_2334.jpeg",
+  "cover": "2026-09-011-streets-plus-home-08.jpg",
   "photos": [
+    {"file": "2026-09-011-streets-plus-home-08.jpg"},
+    {"file": "2026-10-10-dahlia-homecoming-19.jpg"},
     {"file": "DSC_2334.jpeg"},
     {"file": "DSC_2711.jpeg"},
-    {"file": "2026-09-16-driving-photography-22.jpg"},
-    {"file": "2026-09-011-streets-plus-home-08.jpg", "favorite": true},
-    {"file": "2026-10-10-dahlia-homecoming-19.jpg"}
+    {"file": "2026-09-06-gregory-house-18.jpeg"},
+    {"file": "2026-09-06-gregory-house-15.jpeg"},
+    {"file": "2026-09-06-gregory-house-06.jpeg"}
   ]
 }
