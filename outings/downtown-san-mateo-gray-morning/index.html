@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/style.css?v=43">
+  <link rel="stylesheet" href="/style.css?v=48">
   <script src="https://cdn.jsdelivr.net/npm/exifr/dist/full.umd.js"></script>
   <link rel="icon" type="image/png" href="/favicon/favicon-96x96.png" sizes="96x96" />
   <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg" />
@@ -43,21 +43,35 @@
     </header>
 
     <main>
-      <article>
-        <header class="outing-head">
-          <a class="back" href="/outings/">&larr; Outings</a>
-          <h1>Downtown San Mateo - Crosswalks on a Gray Morning</h1>
-          <p class="outing-date">Wednesday, October 21, 2026 · Nikon D7500, 35mm f/1.8</p>
+      <article class="o-page">
+        <a class="back o-back" href="/outings/">&larr; Outings</a>
+        <header class="o-cover">
+          <a class="o-cover-img tile" href="/images/the-streets/large/2026-10-21-san-mateo-41.jpg" data-n="0"><img src="/images/the-streets/large/2026-10-21-san-mateo-41.jpg" alt="Right of Way - Homeless person with a loaded cart and a long crosswalk on San Mateo Drive."></a>
+          <div class="o-cover-text">
+            <span class="o-eyebrow">Outing</span>
+            <h1>Downtown San Mateo - Crosswalks on a Gray Morning</h1>
+            <p class="o-dek">A Wednesday morning downtown with the 35mm and a flat gray sky: no light to work with, only people and timing.</p>
+            <dl class="o-facts">
+              <div><dt>Date</dt><dd>Wed, Oct 21, 2026</dd></div>
+              <div><dt>Gear</dt><dd>Nikon D7500, 35mm f/1.8</dd></div>
+              <div><dt>Frames</dt><dd>2 photos</dd></div>
+            </dl>
+          </div>
         </header>
-        <div class="outing-text">
+        <div class="o-intro outing-text">
           <p>A Wednesday morning in downtown San Mateo with the 35mm prime. The sky stayed flat gray the whole time, so there was no light to work with, only people and timing.</p>
           <p>The best frame came from waiting at one crossing: a man pushing a loaded cart through the crosswalk under the San Mateo Dr sign, the don&#x27;t-walk hand lit behind him. Down the block I tried a tenth of a second on a woman crossing, to blur her into the street.</p>
           <p>About 135 frames, 100 kept. Overcast light and busy backgrounds turned most of the rest into pleasant pictures rather than strong ones. Next time: harder light.</p>
         </div>
-        <div id="outing-strips" class="strips" aria-label="Photographs">
-          <a class="tile" href="/images/the-streets/large/2026-10-21-san-mateo-41.jpg" style="width:533px;height:300px"><img src="/images/the-streets/large/2026-10-21-san-mateo-41.jpg" alt="Right of Way - Homeless person with a loaded cart and a long crosswalk on San Mateo Drive." loading="lazy"></a>
-          <a class="tile" href="/images/the-streets/large/2026-10-21-san-mateo-65.jpg" style="width:533px;height:300px"><img src="/images/the-streets/large/2026-10-21-san-mateo-65.jpg" alt="The Ghost of San Mateo - A pedestrian dissolving into the crosswalk on San Mateo Drive." loading="lazy"></a>
-        </div>
+
+        <section class="o-sec empty" data-stamp="More photos">
+          <div class="o-stamp">More photos</div>
+          <div class="o-body">
+            <div class="sec-strip" data-start="1" aria-label="Photographs">
+              <figure class="sfig" style="width:533px"><a class="tile" href="/images/the-streets/large/2026-10-21-san-mateo-65.jpg"><img src="/images/the-streets/large/2026-10-21-san-mateo-65.jpg" alt="The Ghost of San Mateo - A pedestrian dissolving into the crosswalk on San Mateo Drive." loading="lazy"></a><figcaption><em>01</em>The Ghost of San Mateo</figcaption></figure>
+            </div>
+          </div>
+        </section>
         <p class="outing-foot"><a href="/outings/">&larr; All outings</a></p>
       </article>
     </main>
@@ -78,7 +92,7 @@
   </div>
 
   <script type="application/json" id="outing-data">{"photos": [{"key": "the-streets/2026-10-21-san-mateo-41.jpg", "caption": "Right of Way - Homeless person with a loaded cart and a long crosswalk on San Mateo Drive.", "w": 1080, "h": 608}, {"key": "the-streets/2026-10-21-san-mateo-65.jpg", "caption": "The Ghost of San Mateo - A pedestrian dissolving into the crosswalk on San Mateo Drive.", "w": 1080, "h": 608}]}</script>
-  <script src="/script.js?v=43"></script>
+  <script src="/script.js?v=47"></script>
   <script>
     window.goatcounter = { no_onload: true };
     window.addEventListener('load', function () {

@@ -21,31 +21,43 @@ Never edit `large/`, `thumbnails/`, `albums/`, `outings/*/index.html`,
 Delete the file from `images/<album>/`, then run `python3 update-site.py`.
 (Delete its copies in `large/` and `thumbnails/` too, to keep the folder clean.)
 
-## Write or edit an outing
-Each outing is a folder in `outings/` with one file you edit: `outing.txt`.
+## New outing (the easy way)
+1. Make a folder `images/outings/<name>/` (the name becomes the web address, e.g.
+   `redwood-city-farmers-market`) and drop in the photos you picked.
+2. Run `python3 update-site.py --preview`
+   - It starts `outings/<name>/outing.txt` for you (title, date and gear from the photos),
+     splits the photos into time sections (a new section after 20+ minutes without a photo,
+     or a new day), adds a `## 8:47 a.m.` line for each section, and opens the page in Chrome.
+   - Sections without text show a dim "Write about ... here" note. Only you see it, in preview.
+3. Open `outings/<name>/outing.txt`, fill in title, summary, cover (best photo, e.g.
+   `outings/<name>/<file>.jpg`), light, where, frames (optional), write the intro under `---`
+   and the text for each time under its `##` line. Save; the page rebuilds. Cmd+Shift+R in Chrome.
+   - `## 9:38 a.m. | Produce District` adds a small name under the time.
+4. Ctrl+C in Terminal, then `git add -A`, `git commit -m "..."`, `git push`.
 
+## outing.txt reference
     title: Oakland Chinatown - Murals, Vendors and the Produce Market
     date: 2026-10-26
     gear: Nikon D7500, 18-200mm
-    summary: One or two sentences for the Outings list.
+    summary: One or two sentences for the cover and the Outings list.
+    cover: the-streets/2026-10-26-oakland-china-town-53.jpg
+    light: Low, hard sun
+    where: Oakland Chinatown and the Produce District
+    frames: 105
     photos:
     the-streets/2026-10-26-oakland-china-town-53.jpg
-    outings/oakland-chinatown-murals-vendors-produce-market/library.jpg | Asian Branch - Morning outside the library.
+    outings/oakland-chinatown-murals-vendors-produce-market/2026-10-26-oakland-china-town-17.jpg | Two Glances - comment
     ---
-    First paragraph.
+    Intro paragraphs (no time).
 
-    Second paragraph.
+    ## 8:47 a.m. | Webster Street
+    Text for that part of the day.
 
-- `photos:` lists files under `images/`, in display order. The first one is the cover.
-- A photo that's already in an album: list it as `<album>/<file>`. No copy needed.
-- An outing-only photo (context shot): drop it in `images/outings/<outing-name>/`
-  (same folder name as in `outings/`) and run `python3 update-site.py`. It's added to
-  `photos:` automatically, at the end. Move the line to reorder, and add
-  ` | Title - comment` after it for a caption. Delete the file and its line goes too.
-- New outing: copy an existing outing folder, rename it (the name becomes the web
-  address, e.g. `leesagi.com/outings/oakland-chinatown-murals-vendors-produce-market/`),
-  and edit its `outing.txt`.
-- Then run `python3 update-site.py`
+- Photos are placed by the time they were taken, not by their order in `photos:`.
+  The cover is shown on top and not repeated below.
+- Photos in `images/outings/<name>/` are added to `photos:` automatically. Album photos
+  (`the-streets/...`) can be listed too.
+- Rows: three photos fill the width; one or two are centered at the same height.
 
 ## Map links (GPS)
 Photos keep their GPS location, and the full-screen viewer shows "View on map" for them.

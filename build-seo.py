@@ -34,7 +34,7 @@ import html
 import json
 import os
 import re
-from datetime import date
+from datetime import date, datetime
 
 SITE = "https://leesagi.com"
 NAME = "Lee Sagi"
@@ -200,7 +200,8 @@ def read_outing(folder):
             meta[key] = value.strip()
     paras = [" ".join(p.split()) for p in body.strip().split("\n\n") if p.strip()]
     return {"folder": folder, "title": meta.get("title", folder), "date": meta.get("date", ""),
-            "gear": meta.get("gear", ""), "summary": meta.get("summary", ""), "photos": photos, "paras": paras}
+            "gear": meta.get("gear", ""), "summary": meta.get("summary", ""), "photos": photos, "paras": paras,
+            "meta": meta, "body": body, "raw": raw}
 
 
 def nice_date(iso):
@@ -230,6 +231,23 @@ def photo_info(key, caption=""):
         except Exception:
             w, h = None, None
     return {"key": key, "caption": caption or captions.get(key, ""), "w": w, "h": h}
+
+
+def gps_for(key):
+    """(lat, lon) from a photo's GPS, or None. Photos near private places have none (update-site.py)."""
+    try:
+        from PIL import Image
+        with Image.open(os.path.join(ROOT, "images", key)) as im:
+            g = im.getexif().get_ifd(0x8825)
+        deg = lambda v: float(v[0]) + float(v[1]) / 60 + float(v[2]) / 3600
+        lat = deg(g[2]) * (-1 if str(g.get(1, "N")).upper().startswith("S") else 1)
+        lon = deg(g[4]) * (-1 if str(g.get(3, "E")).upper().startswith("W") else 1)
+        return round(lat, 6), round(lon, 6)
+    except Exception:
+        return None
+
+
+LEAFLET = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4"
 
 
 def large_url(key):
@@ -317,51 +335,273 @@ def outing_shell(title, desc, url, image, ld, main, extra_body=""):
 """
 
 
+SECTION_GAP_MIN = 20   # a new time section starts after this many minutes without a photo, or on a new day
+MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+
+def capture_time(key):
+    """When the photo was taken (camera clock), or None."""
+    try:
+        from PIL import Image
+        with Image.open(os.path.join(ROOT, "images", key)) as im:
+            stamp = im.getexif().get_ifd(0x8769).get(36867) or im.getexif().get(306)
+        return datetime.strptime(str(stamp).strip()[:19], "%Y:%m:%d %H:%M:%S")
+    except Exception:
+        return None
+
+
+def clock(t):
+    h = t.hour % 12 or 12
+    return f"{h}:{t.minute:02d} {'a.m.' if t.hour < 12 else 'p.m.'}"
+
+
+def time_range(a, b):
+    if (a.hour, a.minute) == (b.hour, b.minute):
+        return clock(a)
+    if (a.hour < 12) == (b.hour < 12):
+        return f"{clock(a).rsplit(' ', 1)[0]} – {clock(b)}"
+    return f"{clock(a)} – {clock(b)}"
+
+
+def short_day(t):
+    return t.strftime("%a, %b ") + str(t.day)
+
+
+HEADER_RE = re.compile(r"^##\s*(?:(?P<mon>[A-Za-z]{3})[a-z]*\.?\s+(?P<day>\d{1,2}),?\s*)?"
+                       r"(?P<h>\d{1,2}):(?P<m>\d{2})\s*(?P<ap>[aApP])?\.?\s*[mM]?\.?\s*(?:\|\s*(?P<label>.*))?$")
+
+
+def split_body(body):
+    """Outing text -> (intro paragraphs, [{time-line pieces, line, paragraphs}])."""
+    intro, blocks, cur = [], [], None
+    for chunk in re.split(r"\n(?=##)", "\n" + body.strip()):
+        chunk = chunk.strip("\n")
+        if not chunk.strip():
+            continue
+        first, _, rest = chunk.partition("\n")
+        m = HEADER_RE.match(first.strip()) if first.strip().startswith("##") else None
+        paras = [" ".join(p.split()) for p in (rest if m else chunk).strip().split("\n\n") if p.strip()]
+        if m:
+            blocks.append({"m": m, "line": first.strip(), "paras": paras})
+        elif blocks:
+            blocks[-1]["paras"] += paras
+        else:
+            intro += paras
+    return intro, blocks
+
+
+def header_time(m, trip_day):
+    h, mi = int(m["h"]), int(m["m"])
+    ap = (m["ap"] or "").lower()
+    if ap == "p" and h < 12:
+        h += 12
+    if ap == "a" and h == 12:
+        h = 0
+    d = trip_day
+    if m["mon"] and m["mon"].title()[:3] in MONTHS:
+        d = d.replace(month=MONTHS.index(m["mon"].title()[:3]) + 1, day=int(m["day"]))
+    return d.replace(hour=h, minute=mi, second=0)
+
+
+def make_sections(photos):
+    """Group photos (already in time order) into sections at gaps of SECTION_GAP_MIN or a new day."""
+    timed = [p for p in photos if p.get("t")]
+    sections = []
+    for p in timed:
+        s = sections[-1] if sections else None
+        if s and p["t"].date() == s["end"].date() and (p["t"] - s["end"]).total_seconds() <= SECTION_GAP_MIN * 60:
+            s["photos"].append(p)
+            s["end"] = p["t"]
+        else:
+            sections.append({"start": p["t"], "end": p["t"], "photos": [p]})
+    untimed = [p for p in photos if not p.get("t")]
+    if untimed:
+        sections.append({"start": None, "end": None, "photos": untimed})
+    return sections
+
+
+def add_missing_time_lines(folder, raw, sections, multi_day):
+    """Write a "## time" line into outing.txt for each section that has none, so Lee can type under it."""
+    head, sep, body = raw.partition("\n---\n")
+    if not sep:
+        return
+    new = [s for s in sections if s["start"] and not s.get("blocks")]
+    if not new:
+        return
+    def line(s):
+        day = f"{s['start'].strftime('%b')} {s['start'].day}, " if multi_day else ""
+        return f"## {day}{clock(s['start'])}"
+    # Keep everything Lee wrote; add the new lines in time order among the existing ones.
+    intro_part = body
+    m = re.search(r"(?m)^##", body)
+    if m:
+        intro_part, rest = body[:m.start()], body[m.start():]
+        existing = [c.strip("\n") for c in re.split(r"\n(?=##)", "\n" + rest) if c.strip()]
+    else:
+        existing = []
+    trip_day = sections[0]["start"]
+    items = []
+    for c in existing:
+        hm = HEADER_RE.match(c.split("\n", 1)[0].strip())
+        items.append((header_time(hm, trip_day) if hm else datetime.max, c))
+    for s in new:
+        items.append((s["start"], line(s)))
+        print(f"  outings/{folder}/outing.txt: added the time line \"{line(s)}\" (write about that part under it)")
+    items.sort(key=lambda x: x[0])
+    times = "\n\n".join(c for _, c in items)
+    body = (intro_part.strip("\n") + "\n\n" + times if intro_part.strip() else times) + "\n"
+    with open(os.path.join(ROOT, "outings", folder, "outing.txt"), "w", encoding="utf-8") as f:
+        f.write(head + sep + body)
+
+
+def tile_html(p, n):
+    w = round(300 * (p["w"] / p["h"])) if p.get("w") and p.get("h") else 300
+    title = p["caption"].split(" - ")[0] if p["caption"] else ""
+    return (f'              <figure class="sfig" style="width:{w}px">'
+            f'<a class="tile" href="{esc(large_url(p["key"]))}"><img src="{esc(large_url(p["key"]))}" alt="{esc(p["caption"])}" loading="lazy"></a>'
+            f'<figcaption><em>{n:02d}</em>{esc(title)}</figcaption></figure>')
+
+
 photo_outings = {}
 for o in outings:
     url = f"{SITE}/outings/{o['folder']}/"
     short = o["title"].split(" - ")[0].strip()
     for p in o["photos"]:
         photo_outings.setdefault(p["key"], {"url": f"/outings/{o['folder']}/", "short": short})
-    paras = "\n".join(f"          <p>{esc(t)}</p>" for t in o["paras"])
-    tiles = "\n".join(
-        f'          <a class="tile" href="{esc(large_url(p["key"]))}" style="width:{round(300 * (p["w"] / p["h"])) if p["w"] else 300}px;height:300px">'
-        f'<img src="{esc(large_url(p["key"]))}" alt="{esc(p["caption"])}" loading="lazy"></a>'
-        for p in o["photos"])
-    main = f"""      <article>
-        <header class="outing-head">
-          <a class="back" href="/outings/">&larr; Outings</a>
-          <h1>{esc(o['title'])}</h1>
-          <p class="outing-date">{esc(nice_date(o['date']))}{' · ' + esc(o['gear']) if o['gear'] else ''}</p>
+    for p in o["photos"]:
+        p["t"] = capture_time(p["key"])
+        where = gps_for(p["key"])
+        if where:
+            p["lat"], p["lon"] = where
+    keys = [p["key"] for p in o["photos"]]
+    cover_key = o["meta"].get("cover", "").strip()
+    if cover_key not in keys:
+        cover_key = keys[0] if keys else ""
+    cover = next((p for p in o["photos"] if p["key"] == cover_key), None)
+    body_photos = sorted([p for p in o["photos"] if p is not cover],
+                         key=lambda p: (p["t"] is None, p["t"] or datetime.min))
+    timed_all = [p["t"] for p in o["photos"] if p.get("t")]
+    trip_day = min(timed_all) if timed_all else datetime(2000, 1, 1)
+    multi_day = len({t.date() for t in timed_all}) > 1
+    sections = make_sections(body_photos)
+    # Match each "## time" line Lee wrote to the section it falls in (10 minutes of slack either side).
+    intro, blocks = split_body(o["body"])
+    loose = []
+    for b in blocks:
+        t = header_time(b["m"], trip_day)
+        home = next((s for s in sections if s["start"] and
+                     s["start"].timestamp() - 600 <= t.timestamp() <= s["end"].timestamp() + 600), None)
+        if home:
+            home.setdefault("blocks", []).append(b)
+        else:
+            loose.append({"start": t, "end": t, "photos": [], "blocks": [b]})
+    add_missing_time_lines(o["folder"], o["raw"], sections, multi_day)
+    sections = sorted(sections + loose, key=lambda s: (s["start"] is None, s["start"] or datetime.min))
+
+    # Display order for the full-screen viewer: cover first, then every section's photos.
+    shown = ([cover] if cover else []) + [p for s in sections for p in s["photos"]]
+    for i, p in enumerate(shown):
+        p["n"] = i
+    out, n = [], 0
+    for s in sections:
+        label = next((b["m"]["label"] for b in s.get("blocks", []) if b["m"]["label"]), "")
+        if s["start"]:
+            stamp = time_range(s["start"], s["end"])
+            if multi_day:
+                stamp = f"{short_day(s['start'])} · {stamp}"
+        else:
+            stamp = "More photos"
+        text = [para for b in s.get("blocks", []) for para in b["paras"]]
+        empty = "" if text else " empty"
+        out.append(f'        <section class="o-sec{empty}" data-stamp="{esc(stamp)}">')
+        out.append(f'          <div class="o-stamp">{esc(stamp)}' + (f'<small>{esc(label)}</small>' if label else "") + '</div>')
+        out.append('          <div class="o-body">')
+        out += [f"            <p>{esc(t)}</p>" for t in text]
+        if s["photos"]:
+            start = s["photos"][0]["n"]
+            tiles = []
+            for p in s["photos"]:
+                n += 1
+                tiles.append(tile_html(p, n))
+            out.append(f'            <div class="sec-strip" data-start="{start}" aria-label="Photographs">\n' + "\n".join(tiles) + "\n            </div>")
+        out.append("          </div>")
+        out.append("        </section>")
+    located = sum(1 for p in shown if "lat" in p)
+    has_map = located >= 2
+    map_html = ('        <figure class="outing-map">\n'
+                '          <div id="outing-map" class="map" role="region" aria-label="Map of where the photos were taken"></div>\n'
+                f'          <figcaption>Where I stopped. {located} of {len(shown)} photos have a location; tap a pin to see it.</figcaption>\n'
+                '        </figure>') if has_map else ""
+
+    # Facts panel: worked out from the photos, plus the optional lines in outing.txt.
+    meta = o["meta"]
+    facts = []
+    if o["date"]:
+        try:
+            d = date.fromisoformat(o["date"])
+            facts.append(("Date", d.strftime("%a, %b ") + str(d.day) + d.strftime(", %Y")))
+        except ValueError:
+            facts.append(("Date", o["date"]))
+    if timed_all and not multi_day:
+        facts.append(("Hours", time_range(min(timed_all), max(timed_all))))
+    elif multi_day:
+        facts.append(("Days", f"{short_day(min(timed_all))} – {short_day(max(timed_all))}"))
+    if meta.get("light"):
+        facts.append(("Light", meta["light"]))
+    if o["gear"]:
+        facts.append(("Gear", o["gear"]))
+    count = f"{len(shown)} photo{'s' if len(shown) != 1 else ''}"
+    facts.append(("Frames", f"{meta['frames']} shot · {len(shown)} here" if meta.get("frames") else count))
+    if meta.get("where"):
+        facts.append(("Where", meta["where"]))
+    facts_html = "\n".join(f'              <div><dt>{esc(k)}</dt><dd>{esc(v)}</dd></div>' for k, v in facts)
+    cover_html = (f'          <a class="o-cover-img tile" href="{esc(large_url(cover["key"]))}" data-n="0">'
+                  f'<img src="{esc(large_url(cover["key"]))}" alt="{esc(cover["caption"])}"></a>') if cover else ""
+    eyebrow = f"Outing · {meta['where']}" if meta.get("where") else "Outing"
+    intro_html = "\n".join(f"          <p>{esc(t)}</p>" for t in intro)
+    main = f"""      <article class="o-page">
+        <a class="back o-back" href="/outings/">&larr; Outings</a>
+        <header class="o-cover">
+{cover_html}
+          <div class="o-cover-text">
+            <span class="o-eyebrow">{esc(eyebrow)}</span>
+            <h1>{esc(o['title'])}</h1>
+            {f'<p class="o-dek">{esc(o["summary"])}</p>' if o["summary"] else ''}
+            <dl class="o-facts">
+{facts_html}
+            </dl>
+          </div>
         </header>
-        <div class="outing-text">
-{paras}
+        <div class="o-intro outing-text">
+{intro_html}
         </div>
-        <div id="outing-strips" class="strips" aria-label="Photographs">
-{tiles}
-        </div>
+{map_html}
+{chr(10).join(out)}
         <p class="outing-foot"><a href="/outings/">&larr; All outings</a></p>
       </article>"""
-    data = {"photos": o["photos"]}
+    data = {"photos": [{k: v for k, v in p.items() if k not in ("t", "n")} for p in shown]}
+    leaflet = (f'  <link rel="stylesheet" href="{LEAFLET}/leaflet.min.css">\n'
+               f'  <script src="{LEAFLET}/leaflet.min.js"></script>\n') if has_map else ""
     extra = (f"\n  {lightbox_html}\n  <script type=\"application/json\" id=\"outing-data\">{json.dumps(data, ensure_ascii=False)}</script>\n"
-             f"  <script src=\"/script.js?v={js_v}\"></script>")
+             f"{leaflet}  <script src=\"/script.js?v={js_v}\"></script>")
     ld = {"@context": "https://schema.org", "@graph": [person, {
         "@type": "Article", "headline": o["title"], "url": url, "datePublished": o["date"],
         "author": {"@id": f"{SITE}/#lee"}, "description": o["summary"],
         "image": [{"@type": "ImageObject", "contentUrl": f"{SITE}/images/{p['key']}", "caption": p["caption"],
-                   "creator": {"@id": f"{SITE}/#lee"}, "creditText": NAME, "copyrightNotice": f"© {NAME}"} for p in o["photos"]]}]}
-    cover = large_url(o["photos"][0]["key"]) if o["photos"] else "/logo.png"
-    page = outing_shell(f"{o['title']} | {NAME} Photography", o["summary"], url, cover, ld, main, extra)
-    # The tiles above are plain links so the page reads without JavaScript; script.js rebuilds them as the photo rows.
+                   "creator": {"@id": f"{SITE}/#lee"}, "creditText": NAME, "copyrightNotice": f"© {NAME}"} for p in shown]}]}
+    o["cover_url"] = large_url(cover["key"]) if cover else "/logo.png"
+    o["cover_caption"] = cover["caption"] if cover else ""
+    page = outing_shell(f"{o['title']} | {NAME} Photography", o["summary"], url, o["cover_url"], ld, main, extra)
+    # The tiles above are plain links so the page reads without JavaScript; script.js lays them out in rows.
     write(f"outings/{o['folder']}/index.html", page)
 
 if outings or os.path.isdir(outings_dir):
     rows = []
     for o in outings:
-        cover = large_url(o["photos"][0]["key"]) if o["photos"] else "/logo.png"
+        cover = o.get("cover_url", "/logo.png")
         n = len(o["photos"])
         rows.append(f"""        <a class="outing-row" href="/outings/{o['folder']}/">
-          <img src="{esc(cover)}" alt="{esc(o['photos'][0]['caption'] if o['photos'] else '')}" loading="lazy">
+          <img src="{esc(cover)}" alt="{esc(o.get('cover_caption', ''))}" loading="lazy">
           <div>
             <h2>{esc(o['title'])}</h2>
             <p class="outing-date">{esc(nice_date(o['date']))} · {n} photograph{'s' if n != 1 else ''}</p>
@@ -376,7 +616,7 @@ if outings or os.path.isdir(outings_dir):
     ld = {"@context": "https://schema.org", "@graph": [person, {
         "@type": "CollectionPage", "name": f"Outings | {NAME} Photography", "url": f"{SITE}/outings/",
         "hasPart": [{"@type": "Article", "headline": o["title"], "url": f"{SITE}/outings/{o['folder']}/"} for o in outings]}]}
-    first = large_url(outings[0]["photos"][0]["key"]) if outings and outings[0]["photos"] else "/logo.png"
+    first = outings[0].get("cover_url", "/logo.png") if outings else "/logo.png"
     write("outings/index.html", outing_shell(f"Outings | {NAME} Photography",
           f"Photo outings by {NAME} around the East Bay and the Peninsula: where I went, what the light did, and the photos that held up.",
           f"{SITE}/outings/", first, ld, main, f'\n  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>'))

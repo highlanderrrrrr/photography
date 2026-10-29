@@ -41,7 +41,8 @@ const lbExif = document.getElementById('lb-exif');
 const lbOuting = document.getElementById('lb-outing');
 // Outing pages (outings/<name>/index.html) carry their photos in this tag instead of using albums.json
 const outingData = document.getElementById('outing-data');
-const outingStrips = document.getElementById('outing-strips');
+const outingStrips = Array.from(document.querySelectorAll('.outing-strip'));
+const secStrips = Array.from(document.querySelectorAll('.sec-strip'));
 // Which outing each photo belongs to (made by build-seo.py), for the link under the caption
 let photoOutings = {};
 
@@ -65,10 +66,103 @@ function initOuting() {
     large: '/images/' + p.key.replace(/\/([^/]+)$/, '/large/$1'),
     thumb: '/images/' + p.key.replace(/\/([^/]+)$/, '/thumbnails/$1'),
     caption: p.caption || '',
-    ratio: p.w && p.h ? p.w / p.h : 0
+    ratio: p.w && p.h ? p.w / p.h : 0,
+    lat: p.lat,
+    lon: p.lon
   }));
-  buildStrips(outingStrips, photos);
-  layoutStrips(outingStrips);
+  // Older outing pages: one strip after each paragraph.
+  outingStrips.forEach((strip) => {
+    const start = Number(strip.dataset.start) || 0;
+    const count = strip.children.length;
+    buildStrips(strip, photos.slice(start, start + count), photos, start);
+    layoutStrips(strip);
+  });
+  // Cover photo: opens the full-screen viewer at the first photo.
+  const cover = document.querySelector('.o-cover-img');
+  if (cover) cover.addEventListener('click', (e) => { e.preventDefault(); openLightbox(photos, 0); });
+  // Time sections: every photo opens the viewer at its place in the whole outing.
+  secStrips.forEach((strip) => {
+    const start = Number(strip.dataset.start) || 0;
+    strip.querySelectorAll('.sfig').forEach((fig, i) => {
+      fig.photo = photos[start + i];
+      const link = fig.querySelector('a');
+      if (link) link.addEventListener('click', (e) => { e.preventDefault(); openLightbox(photos, start + i); });
+    });
+    layoutSecStrip(strip);
+  });
+  // Preview on this Mac only: show where text is still missing. Never shown on the live site.
+  if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) {
+    document.querySelectorAll('.o-sec.empty .o-body').forEach((body) => {
+      const p = document.createElement('p');
+      p.className = 'o-ph';
+      p.textContent = 'Write about ' + body.parentElement.dataset.stamp + ' here, under its time line in outing.txt. (Only you see this, in preview.)';
+      body.prepend(p);
+    });
+    const intro = document.querySelector('.o-intro');
+    if (intro && !intro.querySelector('p')) {
+      const p = document.createElement('p');
+      p.className = 'o-ph';
+      p.textContent = 'Write the intro under the --- line in outing.txt: why you went, what you were after. (Only you see this, in preview.)';
+      intro.appendChild(p);
+    }
+  }
+  const mapEl = document.getElementById('outing-map');
+  if (mapEl) buildOutingMap(mapEl, photos);
+}
+
+// Rows of three that fill the width; a row of one or two keeps the same height and sits centered.
+// Phones get one photo per row.
+function layoutSecStrip(strip) {
+  if (!strip || strip.offsetParent === null) return;
+  const figs = Array.from(strip.querySelectorAll('.sfig'));
+  strip.querySelectorAll('.srow').forEach((r) => r.replaceWith(...r.childNodes));
+  const W = strip.getBoundingClientRect().width - 1;
+  const gap = 14;
+  const ratio = (f) => (f.photo && f.photo.ratio) || 1.5;
+  const rows = [];
+  const per = W > 700 ? 3 : 1;
+  for (let i = 0; i < figs.length; i += per) rows.push(figs.slice(i, i + per));
+  const fullH = (W - gap * 2) / 4.5;  // height of a row of three 3:2 photos
+  rows.forEach((row) => {
+    const sum = row.reduce((s, f) => s + ratio(f), 0);
+    let h = (W - gap * (row.length - 1)) / sum;
+    if (per === 3 && row.length < 3) h = Math.min(h, fullH);
+    const div = document.createElement('div');
+    div.className = 'srow';
+    row.forEach((f) => { f.style.width = Math.floor(ratio(f) * h) + 'px'; div.appendChild(f); });
+    strip.appendChild(div);
+  });
+}
+
+// Map with a pin per located photo; a pin opens a small preview, the preview opens the photo.
+function buildOutingMap(el, photos) {
+  const figure = el.closest('figure');
+  const pts = photos.map((p, i) => ({ p, i })).filter(({ p }) => typeof p.lat === 'number' && typeof p.lon === 'number');
+  if (!window.L || pts.length < 2) { if (figure) figure.hidden = true; return; }
+  const map = L.map(el, { scrollWheelZoom: false, dragging: !L.Browser.mobile });
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
+  }).addTo(map);
+  pts.forEach(({ p, i }) => {
+    const pin = L.circleMarker([p.lat, p.lon], { radius: 7, color: '#000', weight: 2, fillColor: '#fff', fillOpacity: 1 }).addTo(map);
+    const box = document.createElement('button');
+    box.type = 'button';
+    box.className = 'map-pop';
+    const img = document.createElement('img');
+    img.src = p.thumb;
+    img.alt = p.caption;
+    img.onerror = () => { img.onerror = null; img.src = p.large; };
+    box.appendChild(img);
+    if (p.caption) {
+      const t = document.createElement('span');
+      t.textContent = p.caption.split(' - ')[0];
+      box.appendChild(t);
+    }
+    box.addEventListener('click', () => { map.closePopup(); openLightbox(photos, i); });
+    pin.bindPopup(box, { closeButton: false, maxWidth: 220, minWidth: 180 });
+  });
+  map.fitBounds(pts.map(({ p }) => [p.lat, p.lon]), { padding: [40, 40], maxZoom: 17 });
 }
 
 function loadSite() {
@@ -201,7 +295,7 @@ function buildCollections() {
 
 // ---------- Photo rows ----------
 
-function buildStrips(container, photos) {
+function buildStrips(container, photos, all = photos, offset = 0) {
   container.innerHTML = '';
   photos.forEach((photo, index) => {
     const tile = document.createElement('button');
@@ -214,7 +308,7 @@ function buildStrips(container, photos) {
     const img = document.createElement('img');
     img.alt = photo.caption || '';
     img.decoding = 'async';
-    if (index < 3) { img.loading = 'eager'; img.fetchPriority = 'high'; } else { img.loading = 'lazy'; }
+    if (offset + index < 3) { img.loading = 'eager'; img.fetchPriority = 'high'; } else { img.loading = 'lazy'; }
     if (!photo.ratio) {
       // No w/h in album.json: lay the row out again once the real shape is known.
       img.addEventListener('load', () => {
@@ -225,7 +319,7 @@ function buildStrips(container, photos) {
       }, { once: true });
     }
     tile.appendChild(img);
-    tile.addEventListener('click', () => openLightbox(photos, index));
+    tile.addEventListener('click', () => openLightbox(all, offset + index));
     container.appendChild(tile);
   });
 }
@@ -300,7 +394,7 @@ function setSource(img, candidates) {
 let resizeTimer;
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => { layoutStrips(homeStrips); layoutStrips(albumStrips); layoutStrips(outingStrips); }, 80);
+  resizeTimer = setTimeout(() => { layoutStrips(homeStrips); layoutStrips(albumStrips); outingStrips.forEach(layoutStrips); secStrips.forEach(layoutSecStrip); }, 80);
 });
 
 // ---------- Lightbox ----------

@@ -261,6 +261,50 @@ main a:focus-visible, button:focus-visible, .tile:focus-visible {
 .outing-head .outing-date { margin: 0 0 18px; font-size: clamp(13px, 0.3vw + 11px, 15px); }
 .outing-text { text-align: left; font-size: clamp(17px, 0.5vw + 13px, 22px); line-height: 1.7; }
 .outing-text p { margin: 0 0 1.1em; color: rgba(255, 255, 255, 0.85); }
+.outing-text .strips { margin: 32px 0 48px; }
+/* ---------- Outing page: magazine cover + time sections ---------- */
+.o-page { padding-top: 8px; }
+.o-back { display: inline-block; font-family: var(--sans); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 22px; }
+.o-cover { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 56px; align-items: start; margin-bottom: 64px; }
+.o-cover-img { display: block; justify-self: start; cursor: zoom-in; background: none; width: auto; height: auto; }
+.o-cover-img img { display: block; width: auto; max-width: 100%; height: auto; max-height: 82vh; }
+.o-eyebrow { font-family: var(--sans); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+.o-cover h1 { font-weight: 400; font-size: clamp(36px, 4.2vw, 64px); line-height: 1.06; margin: 14px 0 24px; text-wrap: balance; text-align: left; }
+.o-dek { font-style: italic; font-size: clamp(18px, 0.9vw + 10px, 22px); line-height: 1.5; color: rgba(255, 255, 255, 0.84); margin: 0 0 30px; max-width: 36ch; }
+.o-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 28px; margin: 0; padding-top: 20px; border-top: 1px solid var(--line); }
+.o-facts dt { font-family: var(--sans); font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.o-facts dd { margin: 3px 0 0; font-size: 16px; }
+.o-intro { margin-bottom: 20px; }
+.o-sec { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 32px; margin: 0 0 40px; }
+.o-stamp { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12px; color: #c9a26a; padding-top: 8px; border-top: 1px solid #c9a26a; align-self: start; }
+.o-stamp small { display: block; margin-top: 5px; font-size: 11px; color: var(--muted); }
+.o-body { min-width: 0; }
+.o-body p { font-size: clamp(17px, 0.5vw + 13px, 22px); line-height: 1.7; margin: 0 0 1.1em; color: rgba(255, 255, 255, 0.85); }
+.o-intro p.o-ph, .o-body p.o-ph { font-style: italic; color: var(--muted); border-left: 2px dashed var(--muted); padding-left: 14px; }
+.sec-strip { display: flex; flex-direction: column; gap: 14px; margin: 26px 0 8px; }
+.srow { display: flex; justify-content: center; gap: 14px; }
+.sfig { margin: 0; min-width: 0; max-width: 100%; }
+.sfig .tile { display: block; width: 100%; height: auto; cursor: zoom-in; }
+.sfig img { display: block; width: 100%; height: auto; }
+.sfig figcaption { margin-top: 7px; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 11px; color: var(--muted); }
+.sfig figcaption em { font-style: normal; color: #c9a26a; margin-right: 8px; }
+@media (max-width: 760px) {
+  .o-cover { grid-template-columns: 1fr; gap: 24px; }
+  .o-cover-text { order: -1; }
+  .o-facts { grid-template-columns: 1fr 1fr; }
+  .o-sec { grid-template-columns: 1fr; gap: 10px; }
+}
+
+.outing-map { margin: 8px 0 44px; }
+.outing-map { width: min(100%, 600px); margin-left: auto; margin-right: auto; }
+.outing-map .map { aspect-ratio: 3 / 2; width: 100%; background: #111; position: relative; z-index: 0; isolation: isolate; }
+.outing-map .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9) grayscale(0.4); }
+.outing-map figcaption { margin-top: 10px; font-family: var(--sans); font-size: 13px; color: var(--muted); }
+.outing-map .leaflet-popup-content-wrapper, .outing-map .leaflet-popup-tip { background: #111; color: #fff; border-radius: 4px; }
+.outing-map .leaflet-popup-content { margin: 8px; }
+.map-pop { display: block; width: 100%; padding: 0; border: 0; background: none; color: inherit; cursor: zoom-in; text-align: left; }
+.map-pop img { display: block; width: 100%; height: auto; }
+.map-pop span { display: block; margin-top: 6px; font-family: var(--serif); font-size: 15px; }
 .outing-foot { margin-top: 56px; padding-top: 22px; border-top: 1px solid var(--line); font-family: var(--sans); font-size: 14px; color: var(--muted); }
 
 @media (max-width: 760px) {

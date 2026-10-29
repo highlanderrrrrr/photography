@@ -258,15 +258,61 @@ def is_photo_line(line):
     return bool(line) and ":" not in line.split("/")[0]
 
 
+def photo_facts(folder, files):
+    """Earliest date and a gear line ("Nikon D7500, 18-200mm") from the photos' EXIF."""
+    import re
+    days, cameras, lenses = [], [], []
+    for name in files:
+        try:
+            with Image.open(os.path.join(folder, name)) as im:
+                exif = im.getexif()
+                sub = exif.get_ifd(0x8769)
+        except OSError:
+            continue
+        stamp = str(sub.get(36867) or exif.get(306) or "")
+        if len(stamp) >= 10:
+            days.append(stamp[:10].replace(":", "-"))
+        model = str(exif.get(0x0110) or "").strip()
+        if model:
+            model = " ".join(w.capitalize() if w.isalpha() and w.isupper() else w for w in model.split())
+            if model not in cameras:
+                cameras.append(model)
+        lens = str(sub.get(0xA434) or "")
+        m = re.search(r"(\d+(?:-\d+)?)mm", lens)
+        if m:
+            short = m.group(0) if "-" in m.group(1) else (m.group(0) + (" " + re.search(r"f/[\d.]+", lens).group(0) if re.search(r"f/[\d.]+", lens) else ""))
+            if short not in lenses:
+                lenses.append(short)
+    gear = ", ".join(x for x in [" + ".join(cameras), " + ".join(lenses)] if x)
+    return (min(days) if days else ""), gear
+
+
+def create_outing(name, found):
+    """A new folder in images/outings/ gets its outings/<name>/outing.txt started automatically."""
+    date_iso, gear = photo_facts(os.path.join(IMAGES, "outings", name), list(found))
+    title = " ".join(w.capitalize() for w in name.replace("_", "-").split("-") if w)
+    os.makedirs(os.path.join(ROOT, "outings", name), exist_ok=True)
+    with open(os.path.join(ROOT, "outings", name, "outing.txt"), "w", encoding="utf-8") as f:
+        f.write(f"title: {title}\n"
+                f"date: {date_iso}\n"
+                f"gear: {gear}\n"
+                f"summary: \n"
+                f"cover: \n"
+                f"light: \n"
+                f"where: \n"
+                f"frames: \n"
+                f"photos:\n"
+                f"---\n")
+    print(f"  started outings/{name}/outing.txt (title, date and gear filled in from the photos; edit them as you like)")
+
+
 def sync_outing(name, found):
     """Make outings/<name>/outing.txt list every photo in images/outings/<name>/.
     New photos are added at the end of the photos list; lines for deleted photos are removed.
     Album photos (the-streets/... and so on) are left alone."""
     path = os.path.join(ROOT, "outings", name, "outing.txt")
     if not os.path.isfile(path):
-        print(f"  warning: images/outings/{name}/ has no matching outings/{name}/outing.txt, "
-              f"so its photos aren't on any page. The two folder names must match.")
-        return
+        create_outing(name, found)
     with open(path, encoding="utf-8") as f:
         lines = f.read().replace("\r\n", "\n").split("\n")
     prefix = f"outings/{name}/"
@@ -323,5 +369,88 @@ def main():
     print("All done. Preview, then commit and push.")
 
 
-if __name__ == "__main__":
+# ---------- preview: python3 update-site.py --preview ----------
+
+def watched_state():
+    """Modification times of everything that changes the pages."""
+    state = {}
+    for base in ("outings", "images"):
+        for dirpath, dirnames, filenames in os.walk(os.path.join(ROOT, base)):
+            dirnames[:] = [d for d in dirnames if d not in ("large", "thumbnails")]
+            for n in filenames:
+                if n.endswith((".txt", ".json", ".jpg", ".jpeg", ".JPG", ".JPEG")):
+                    p = os.path.join(dirpath, n)
+                    try:
+                        state[p] = os.path.getmtime(p)
+                    except OSError:
+                        pass
+    for n in ("albums.json", "private-places.txt"):
+        p = os.path.join(ROOT, n)
+        if os.path.exists(p):
+            state[p] = os.path.getmtime(p)
+    return state
+
+
+def newest_outing():
+    folder = os.path.join(ROOT, "outings")
+    names = [n for n in os.listdir(folder) if os.path.isfile(os.path.join(folder, n, "outing.txt"))] if os.path.isdir(folder) else []
+    if not names:
+        return "/"
+    def latest(n):
+        times = [os.path.getmtime(os.path.join(folder, n, "outing.txt"))]
+        img = os.path.join(IMAGES, "outings", n)
+        if os.path.isdir(img):
+            times += [os.path.getmtime(os.path.join(img, f)) for f in os.listdir(img)]
+        return max(times)
+    return f"/outings/{max(names, key=latest)}/"
+
+
+def preview():
+    import functools
+    import http.server
+    import threading
+    import time
+    import webbrowser
     main()
+    class Quiet(http.server.SimpleHTTPRequestHandler):
+        def log_message(self, *args):
+            pass
+    handler = functools.partial(Quiet, directory=ROOT)
+    server = None
+    for port in range(8000, 8011):
+        try:
+            server = http.server.ThreadingHTTPServer(("127.0.0.1", port), handler)
+            break
+        except OSError:
+            continue
+    if not server:
+        sys.exit("Couldn't start the preview: ports 8000-8010 are busy.")
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    url = f"http://localhost:{server.server_port}{newest_outing()}"
+    print(f"\nPreview: {url}")
+    print("Edit and save; the pages rebuild by themselves. Press Cmd+Shift+R in Chrome to see changes.")
+    print("Press Ctrl+C here when you're done.\n")
+    webbrowser.open(url)
+    state = watched_state()
+    try:
+        while True:
+            time.sleep(1)
+            now = watched_state()
+            if now != state:
+                time.sleep(0.5)  # let the save finish
+                print(time.strftime("%H:%M:%S"), "change seen, rebuilding...")
+                try:
+                    main()
+                except Exception as e:
+                    print("  rebuild failed:", e)
+                state = watched_state()
+    except KeyboardInterrupt:
+        server.shutdown()
+        print("\nPreview stopped. Next: git add -A, git commit -m \"...\", git push")
+
+
+if __name__ == "__main__":
+    if "--preview" in sys.argv[1:]:
+        preview()
+    else:
+        main()
