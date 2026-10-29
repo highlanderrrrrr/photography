@@ -1,40 +1,45 @@
-let data = { albums: [], featured: null };
+// ============================================================
+// Lee Sagi — Photography
+//
+// albums.json
+//   "albums":   album folders under images/, in menu order
+//   "homepage": the Work page, one "album/file" per line, in display order
+// images/<album>/album.json
+//   title, cover, and photos: {"file", "caption"?, "w"?, "h"?}
+//   w/h (pixel size) let rows lay out before images load; without them
+//   the row is laid out again once the photo arrives.
+// Each photo can have up to three sizes, all with the same file name:
+//   thumbnails/<file>  ~800px   small tiles
+//   large/<file>       1600px   big tiles
+//   <file>             original lightbox
+// A missing size falls back to the next larger one.
+// ============================================================
+
+let albums = [];
+let homepage = [];
 let currentList = [];
 let currentIndex = 0;
 const exifCache = new Map();
-const exifRawCache = new Map();
 
-const homeView = document.getElementById('home-view');
-const heroSection = document.getElementById('hero-section');
-const heroFrame = document.getElementById('hero-frame');
-const heroImage = document.getElementById('hero-image');
-const heroSidebarTitle = document.getElementById('hero-sidebar-title');
-const heroSidebarCaption = document.getElementById('hero-sidebar-caption');
-const heroMetaCamera = document.getElementById('hero-meta-camera');
-const heroMetaLens = document.getElementById('hero-meta-lens');
-const heroMetaExposure = document.getElementById('hero-meta-exposure');
-const heroMetaIso = document.getElementById('hero-meta-iso');
-const heroExpandBtn = document.getElementById('hero-expand-btn');
-
-const albumsSection = document.getElementById('albums-section');
-const favoritesSection = document.getElementById('favorites-section');
-const albumsGrid = document.getElementById('albums-grid');
-const favoritesGrid = document.getElementById('favorites-grid');
-
-const albumView = document.getElementById('album-view');
-const albumGrid = document.getElementById('album-grid');
+const views = {
+  work: document.getElementById('work-view'),
+  collections: document.getElementById('collections-view'),
+  album: document.getElementById('album-view'),
+  about: document.getElementById('about-view'),
+  contact: document.getElementById('contact-view')
+};
+const homeStrips = document.getElementById('home-strips');
+const albumStrips = document.getElementById('album-strips');
 const albumTitleEl = document.getElementById('album-title');
-
+const collectionsGrid = document.getElementById('collections-grid');
 const emptyState = document.getElementById('empty-state');
+
 const lightbox = document.getElementById('lightbox');
 const lbImage = document.getElementById('lb-image');
 const lbCaption = document.getElementById('lb-caption');
 const lbExif = document.getElementById('lb-exif');
-const lbClose = document.getElementById('lb-close');
-const lbPrev = document.getElementById('lb-prev');
-const lbNext = document.getElementById('lb-next');
-const slideshowAudio = document.getElementById('slideshow-audio');
-const lbMuteBtn = document.getElementById('lb-mute');
+
+// ---------- Loading ----------
 
 fetch('albums.json')
   .then((res) => {
@@ -42,37 +47,19 @@ fetch('albums.json')
     return res.json();
   })
   .then((payload) => {
-    let dirs = [];
-    if (Array.isArray(payload)) {
-      dirs = payload;
-      data.featured = null;
-    } else if (payload && typeof payload === 'object') {
-      dirs = payload.albums || [];
-      data.featured = payload.featured || null;
-    }
-
-    return Promise.all(
-      dirs.map((dir) =>
-        loadAlbum(dir).catch((err) => {
-          console.warn('Skipping album directory:', dir, err);
-          return null;
-        })
-      )
-    );
-  })
-  .then((albums) => {
-    data.albums = albums.filter(Boolean);
-    if (data.albums.length === 0 && !data.featured) {
-      emptyState.textContent = 'No albums loaded. Check folder names in /images.';
-      emptyState.hidden = false;
-      return;
-    }
-    updateStatsLine();
-    route();
+    const dirs = Array.isArray(payload) ? payload : (payload.albums || []);
+    return Promise.all(dirs.map((dir) => loadAlbum(dir).catch((err) => {
+      console.warn('Skipping album', dir, err);
+      return null;
+    }))).then((loaded) => {
+      albums = loaded.filter(Boolean);
+      homepage = resolveHomepage(Array.isArray(payload) ? null : payload.homepage);
+      route();
+    });
   })
   .catch((err) => {
-    console.error('Could not load albums.json:', err);
-    emptyState.textContent = 'Could not load albums.json. Check browser console.';
+    console.error(err);
+    emptyState.textContent = 'Could not load albums.json. Check the browser console.';
     emptyState.hidden = false;
   });
 
@@ -80,471 +67,230 @@ function loadAlbum(dir) {
   const base = 'images/' + dir + '/';
   return fetch(base + 'album.json')
     .then((res) => {
-      if (!res.ok) throw new Error('album.json not found at ' + base + 'album.json');
+      if (!res.ok) throw new Error('album.json not found in ' + base);
       return res.json();
     })
     .then((album) => {
-      const photos = (album.photos || []).map((p) => Object.assign({}, p, {
+      const photos = (album.photos || []).map((p) => ({
+        key: dir + '/' + p.file,
         file: base + p.file,
+        large: base + 'large/' + p.file,
         thumb: base + 'thumbnails/' + p.file,
+        caption: p.caption || '',
+        favorite: p.favorite === true,
+        ratio: p.w && p.h ? p.w / p.h : 0,
         albumTitle: album.title || dir
       }));
-      const coverFile = album.cover ? base + album.cover : (photos[0] && photos[0].file) || '';
-      const coverThumb = album.cover ? base + 'thumbnails/' + album.cover : (photos[0] && photos[0].thumb) || '';
-      return {
-        id: dir,
-        title: album.title || dir,
-        cover: coverFile,
-        coverThumb: coverThumb,
-        photos: photos
-      };
+      const cover = photos.find((p) => album.cover && p.key === dir + '/' + album.cover) || photos[0];
+      return { id: dir, title: album.title || dir, cover, photos };
     });
 }
 
-window.addEventListener('hashchange', route);
-
-function updateStatsLine() {
-  const statsEl = document.getElementById('stats-line');
-  if (!statsEl) return;
-  const albumCount = (data.albums || []).length;
-  const photoCount = (data.albums || []).reduce((sum, a) => sum + (a.photos ? a.photos.length : 0), 0);
-  if (!albumCount && !photoCount) {
-    statsEl.hidden = true;
-    return;
+// "homepage" lists photos as "album/file". Unknown entries are skipped with a
+// console warning. Without a list, photos marked "favorite" are used instead.
+function resolveHomepage(list) {
+  const byKey = new Map();
+  albums.forEach((a) => a.photos.forEach((p) => byKey.set(p.key, p)));
+  if (Array.isArray(list) && list.length) {
+    return list.map((key) => {
+      const p = byKey.get(key);
+      if (!p) console.warn('homepage: no photo named', key);
+      return p;
+    }).filter(Boolean);
   }
-  const albumText = albumCount + (albumCount === 1 ? ' album' : ' albums');
-  const photoText = photoCount + (photoCount === 1 ? ' photo' : ' photos');
-  statsEl.textContent = `${albumText} · ${photoText}`;
-  statsEl.hidden = false;
-}
-
-// Hash routing swaps views without a page load, so the browser keeps the old
-// scroll offset. Reset it explicitly on every view change.
-function resetScroll(target) {
-  const y = target ? Math.max(target.getBoundingClientRect().top + window.scrollY - 80, 0) : 0;
-  try {
-    window.scrollTo({ top: y, left: 0, behavior: 'instant' });
-  } catch (err) {
-    window.scrollTo(0, y); // older browsers: no 'instant' option
-  }
-}
-
-function route() {
-  const hash = location.hash;
-  if (hash.startsWith('#album/')) {
-    const id = decodeURIComponent(hash.slice('#album/'.length));
-    const album = data.albums.find((a) => a.id === id);
-    if (album) {
-      showAlbum(album);
-      return;
-    }
-  }
-  showHome();
-}
-
-function showHome() {
-  const cameFromAlbum = !albumView.hidden;
-  albumView.hidden = true;
-  homeView.hidden = false;
-  document.title = 'Lee Sagi \u2014 Photography';
-  renderHome();
-  if (cameFromAlbum) resetScroll(albumsSection);
-}
-
-function showAlbum(album) {
-  const wasHome = !homeView.hidden;
-  homeView.hidden = true;
-  albumView.hidden = false;
-  document.title = album.title + ' — Lee Sagi';
-  albumTitleEl.textContent = album.title;
-  renderAlbumGrid(album);
-  if (wasHome) resetScroll();
-}
-
-function sortPhotos(list) {
-  return list.slice().sort((a, b) => {
-    const aMarked = a.favorite === true || typeof a.order === 'number';
-    const bMarked = b.favorite === true || typeof b.order === 'number';
-    if (aMarked !== bMarked) return aMarked ? -1 : 1;
-    if (aMarked) {
-      const ao = typeof a.order === 'number' ? a.order : Number.MAX_SAFE_INTEGER;
-      const bo = typeof b.order === 'number' ? b.order : Number.MAX_SAFE_INTEGER;
-      return ao - bo;
-    }
-    return 0;
-  });
-}
-
-function getFavorites() {
   const favorites = [];
-  (data.albums || []).forEach((album) => {
-    (album.photos || []).forEach((photo) => {
-      if (photo.favorite) favorites.push(photo);
-    });
-  });
+  albums.forEach((a) => a.photos.forEach((p) => { if (p.favorite) favorites.push(p); }));
   return favorites;
 }
 
-function shuffle(list) {
-  const arr = list.slice();
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
+// ---------- Routing ----------
 
-function getAllPhotos() {
-  const all = [];
-  (data.albums || []).forEach((album) => {
-    (album.photos || []).forEach((photo) => all.push(photo));
+window.addEventListener('hashchange', route);
+
+function route() {
+  const hash = decodeURIComponent(location.hash.replace(/^#/, ''));
+  let view = 'work';
+  let album = null;
+  if (hash.startsWith('album/')) {
+    album = albums.find((a) => a.id === hash.slice(6));
+    view = album ? 'album' : 'collections';
+  } else if (views[hash]) {
+    view = hash;
+  }
+
+  Object.entries(views).forEach(([name, el]) => { el.hidden = name !== view; });
+  document.querySelectorAll('nav a[data-view]').forEach((a) => {
+    const active = a.dataset.view === view || (view === 'album' && a.dataset.view === 'collections');
+    if (active) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   });
-  return all;
-}
 
-let slideshowActive = false;
-let slideshowTimer = null;
-const SLIDESHOW_INTERVAL = 5000;
-
-function resetSlideshowTimer() {
-  clearTimeout(slideshowTimer);
-  if (!slideshowActive) return;
-  slideshowTimer = setTimeout(showNext, SLIDESHOW_INTERVAL);
-}
-
-function startSlideshow() {
-  const pool = shuffle(getAllPhotos());
-  if (pool.length === 0) return;
-  slideshowActive = true;
-  openLightbox(pool, 0);
-  resetSlideshowTimer();
-
-  if (slideshowAudio) {
-    slideshowAudio.volume = 0.4; // modest — visitor can raise/lower via their own device
-    slideshowAudio.muted = true; // starts silent; visitor opts in via the speaker button
-    slideshowAudio.currentTime = 0;
-    slideshowAudio.play().catch(() => {}); // ignore failures (e.g. no track added yet)
-    updateMuteButtonLabel();
-    if (lbMuteBtn) lbMuteBtn.hidden = false;
-  }
-}
-
-function stopSlideshow() {
-  slideshowActive = false;
-  clearTimeout(slideshowTimer);
-  slideshowTimer = null;
-  if (slideshowAudio) {
-    slideshowAudio.pause();
-    slideshowAudio.currentTime = 0;
-  }
-  if (lbMuteBtn) lbMuteBtn.hidden = true;
-}
-
-function updateMuteButtonLabel() {
-  if (!lbMuteBtn || !slideshowAudio) return;
-  lbMuteBtn.textContent = slideshowAudio.muted ? '\u{1F507}' : '\u{1F50A}';
-  lbMuteBtn.setAttribute('aria-label', slideshowAudio.muted ? 'Unmute music' : 'Mute music');
-}
-
-function preloadNextPhoto() {
-  if (!currentList.length) return;
-  const next = currentList[(currentIndex + 1) % currentList.length];
-  if (!next) return;
-  const img = new Image();
-  img.src = next.file;
-}
-
-// Full raw EXIF parsing helper
-async function parseRawExif(filePath) {
-  if (exifRawCache.has(filePath)) {
-    return exifRawCache.get(filePath);
-  }
-
-  if (typeof window.exifr === 'undefined') return null;
-
-  try {
-    let tags = await window.exifr.parse(filePath, [
-      'Make',
-      'Model',
-      'LensModel',
-      'FocalLength',
-      'FNumber',
-      'ExposureTime',
-      'ISO'
-    ]).catch(() => null);
-
-    if (!tags) {
-      const response = await fetch(filePath, { headers: { Range: 'bytes=0-65535' } }).catch(() => null);
-      if (response && (response.status === 200 || response.status === 206)) {
-        const buffer = await response.arrayBuffer();
-        tags = await window.exifr.parse(buffer, [
-          'Make',
-          'Model',
-          'LensModel',
-          'FocalLength',
-          'FNumber',
-          'ExposureTime',
-          'ISO'
-        ]).catch(() => null);
-      }
+  if (view === 'work') {
+    document.title = 'Lee Sagi — Photography';
+    if (!homeStrips.childElementCount) buildStrips(homeStrips, homepage);
+    layoutStrips(homeStrips);
+  } else if (view === 'collections') {
+    document.title = 'Collections — Lee Sagi';
+    if (!collectionsGrid.childElementCount) buildCollections();
+  } else if (view === 'album') {
+    document.title = album.title + ' — Lee Sagi';
+    albumTitleEl.textContent = album.title;
+    if (albumStrips.dataset.album !== album.id) {
+      albumStrips.dataset.album = album.id;
+      buildStrips(albumStrips, album.photos);
     }
-
-    exifRawCache.set(filePath, tags || null);
-    return tags;
-  } catch (err) {
-    exifRawCache.set(filePath, null);
-    return null;
-  }
-}
-
-async function getPhotoMeta(photo) {
-  if (exifCache.has(photo.file)) {
-    return exifCache.get(photo.file);
-  }
-
-  const tags = await parseRawExif(photo.file);
-  if (tags) {
-    const parts = [];
-    const camera = tags.Model || tags.Make;
-    if (camera) parts.push(camera);
-    if (tags.FocalLength) parts.push(`${Math.round(tags.FocalLength)}mm`);
-    if (tags.FNumber) parts.push(`ƒ/${tags.FNumber}`);
-    if (tags.ExposureTime) {
-      const shutter = tags.ExposureTime >= 1
-        ? `${tags.ExposureTime}s`
-        : `1/${Math.round(1 / tags.ExposureTime)}s`;
-      parts.push(shutter);
-    }
-    if (tags.ISO) parts.push(`ISO ${tags.ISO}`);
-
-    if (parts.length > 0) {
-      const formatted = parts.join(' · ');
-      exifCache.set(photo.file, formatted);
-      return formatted;
-    }
-  }
-
-  if (photo.meta || photo.camera) {
-    return photo.meta || photo.camera;
-  }
-
-  exifCache.set(photo.file, '');
-  return '';
-}
-
-const MASONRY_ROW_UNIT = 4;
-const MASONRY_GAP = 16;
-
-function applyMasonrySpan(item, img) {
-  const columnWidth = item.getBoundingClientRect().width;
-  if (!columnWidth || !img.naturalWidth) return;
-  const scaledHeight = (img.naturalHeight / img.naturalWidth) * columnWidth;
-  const span = Math.ceil((scaledHeight + MASONRY_GAP) / (MASONRY_ROW_UNIT + MASONRY_GAP));
-  item.style.gridRowEnd = 'span ' + span;
-}
-
-function setUpMasonryTile(item, img) {
-  function measure() {
-    requestAnimationFrame(() => applyMasonrySpan(item, img));
-  }
-  if (img.complete && img.naturalWidth) {
-    measure();
+    layoutStrips(albumStrips);
   } else {
-    img.addEventListener('load', measure);
+    document.title = view.charAt(0).toUpperCase() + view.slice(1) + ' — Lee Sagi';
   }
+  window.scrollTo(0, 0);
 }
 
-let resizeTimeout;
+// ---------- Collections ----------
 
-window.addEventListener('resize', () => {
-  clearTimeout(resizeTimeout);
-  resizeTimeout = setTimeout(() => {
-    document.querySelectorAll('.photo-grid .gallery-item').forEach((item) => {
-      const img = item.querySelector('img');
-      if (img && img.naturalWidth) applyMasonrySpan(item, img);
-    });
-  }, 100);
-});
-
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('is-visible');
-      revealObserver.unobserve(entry.target);
-    }
-  });
-}, { rootMargin: '0px 0px -40px 0px', threshold: 0.05 });
-
-function loadWithFallback(img, primarySrc, fallbackSrc) {
-  img.src = primarySrc;
-  if (!fallbackSrc || fallbackSrc === primarySrc) return;
-  img.addEventListener('error', function onError() {
-    img.removeEventListener('error', onError);
-    img.src = fallbackSrc;
+function buildCollections() {
+  albums.forEach((album) => {
+    const a = document.createElement('a');
+    a.className = 'collection';
+    a.href = '#album/' + encodeURIComponent(album.id);
+    const img = document.createElement('img');
+    img.alt = '';
+    img.loading = 'lazy';
+    if (album.cover) setSource(img, [album.cover.large, album.cover.file]);
+    const name = document.createElement('span');
+    name.className = 'collection-name';
+    name.textContent = album.title;
+    const count = document.createElement('span');
+    count.className = 'collection-count';
+    count.textContent = album.photos.length + (album.photos.length === 1 ? ' photo' : ' photos');
+    a.append(img, name, count);
+    collectionsGrid.appendChild(a);
   });
 }
 
-function renderHome() {
-  revealObserver.disconnect();
-  albumsGrid.innerHTML = '';
-  favoritesGrid.innerHTML = '';
-  emptyState.hidden = true;
+// ---------- Photo rows ----------
 
-  const albums = data.albums || [];
-  const favorites = shuffle(getFavorites());
-
-  albumsSection.hidden = albums.length === 0;
-  favoritesSection.hidden = favorites.length === 0;
-
-  const heroTarget = data.featured || favorites[0] || (albums[0] && albums[0].photos[0]);
-  if (heroTarget) {
-    heroImage.src = heroTarget.file;
-    heroImage.style.objectPosition = heroTarget.position || '';
-    heroSection.hidden = false;
-
-    const openHero = () => openLightbox([heroTarget], 0);
-    heroFrame.onclick = openHero;
-    heroFrame.onkeydown = (e) => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openHero(); }
-    };
-    if (heroExpandBtn) heroExpandBtn.onclick = openHero;
-
-    // Sidebar text & EXIF population
-    if (heroSidebarTitle) {
-      heroSidebarTitle.textContent = heroTarget.caption || heroTarget.albumTitle || 'Selected Work';
-    }
-    if (heroSidebarCaption) {
-      if (heroTarget.description) {
-        heroSidebarCaption.textContent = heroTarget.description;
-        heroSidebarCaption.hidden = false;
-      } else {
-        heroSidebarCaption.textContent = '';
-        heroSidebarCaption.hidden = true;
-      }
-    }
-
-    parseRawExif(heroTarget.file).then((tags) => {
-      if (tags) {
-        if (heroMetaCamera) heroMetaCamera.textContent = tags.Model || tags.Make || '\u2014';
-        if (heroMetaLens) {
-          const fl = tags.FocalLength ? `${Math.round(tags.FocalLength)}mm` : '';
-          const fn = tags.FNumber ? `ƒ/${tags.FNumber}` : '';
-          heroMetaLens.textContent = [fl, fn].filter(Boolean).join(' ') || tags.LensModel || '\u2014';
-        }
-        if (heroMetaExposure) {
-          if (tags.ExposureTime) {
-            const shutter = tags.ExposureTime >= 1 ? `${tags.ExposureTime}s` : `1/${Math.round(1 / tags.ExposureTime)}s`;
-            heroMetaExposure.textContent = shutter;
-          }
-        }
-        if (heroMetaIso) {
-          if (tags.ISO) heroMetaIso.textContent = `ISO ${tags.ISO}`;
-        }
-      }
-    });
-  } else {
-    heroSection.hidden = true;
-  }
-
-  albums.forEach((album, index) => {
-    const item = document.createElement('a');
-    item.className = 'album-item';
-    item.href = '#album/' + encodeURIComponent(album.id);
+function buildStrips(container, photos) {
+  container.innerHTML = '';
+  photos.forEach((photo, index) => {
+    const tile = document.createElement('button');
+    tile.type = 'button';
+    tile.className = 'tile';
+    tile.setAttribute('aria-label', photo.caption ? 'Open: ' + photo.caption : 'Open photo ' + (index + 1));
+    tile.style.setProperty('--ar', photo.ratio || 1.5);
+    tile.photo = photo;
 
     const img = document.createElement('img');
-    img.alt = album.title;
-    img.loading = 'lazy';
-    loadWithFallback(img, album.coverThumb, album.cover);
-    item.appendChild(img);
-
-    const label = document.createElement('div');
-    label.className = 'item-caption';
-    const count = album.photos.length;
-    const countLabel = count === 1 ? '1 photo' : `${count} photos`;
-    label.innerHTML = `
-      <span class="album-name"></span>
-      <span class="album-count"></span>
-    `;
-    label.querySelector('.album-name').textContent = album.title;
-    label.querySelector('.album-count').textContent = countLabel;
-    item.appendChild(label);
-    albumsGrid.appendChild(item);
-  });
-
-  favorites.forEach((photo, index) => {
-    favoritesGrid.appendChild(createPhotoTile(photo, index, favorites));
+    img.alt = photo.caption || '';
+    img.decoding = 'async';
+    if (index < 3) { img.loading = 'eager'; img.fetchPriority = 'high'; } else { img.loading = 'lazy'; }
+    if (!photo.ratio) {
+      // No w/h in album.json: lay the row out again once the real shape is known.
+      img.addEventListener('load', () => {
+        if (!img.naturalWidth) return;
+        photo.ratio = img.naturalWidth / img.naturalHeight;
+        tile.style.setProperty('--ar', photo.ratio);
+        layoutStrips(container);
+      }, { once: true });
+    }
+    tile.appendChild(img);
+    tile.addEventListener('click', () => openLightbox(photos, index));
+    container.appendChild(tile);
   });
 }
 
-function renderAlbumGrid(album) {
-  revealObserver.disconnect();
-  albumGrid.innerHTML = '';
-  const photos = sortPhotos(album.photos || []);
-  photos.forEach((photo, index) => {
-    albumGrid.appendChild(createPhotoTile(photo, index, photos));
-  });
-}
+// Splits photos into rows that exactly fill the width. Breaks are chosen so
+// rows stay near the target height, rows with a vertical photo may run taller
+// (so it isn't squeezed), and three photos per row is preferred.
+function layoutStrips(container) {
+  if (!container || container.offsetParent === null) return;
+  const tiles = Array.from(container.children);
+  if (!tiles.length) return;
+  const ar = tiles.map((t) => t.photo.ratio || 1.5);
+  const W = container.getBoundingClientRect().width - 1;
+  const gap = parseFloat(getComputedStyle(container).columnGap) || 0;
+  const wide = W > 700;
+  // Above phone width the row height scales with the page (460px at a 1354px grid),
+  // so a narrower window shows the same rows, just smaller.
+  const target = wide ? W * (460 / 1354) : parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--row'));
+  const preferThree = wide ? Math.pow(target * 0.9, 2) : 0;
 
-function createPhotoTile(photo, index, list) {
-  const item = document.createElement('div');
-  item.className = 'gallery-item';
-  item.tabIndex = 0;
-  item.setAttribute('role', 'button');
-  item.setAttribute('aria-label', photo.caption || 'Photo ' + (index + 1));
-  
-  item.style.transitionDelay = `${Math.min(index * 35, 300)}ms`;
-  revealObserver.observe(item);
-
-  const img = document.createElement('img');
-  img.alt = photo.caption || '';
-  img.loading = 'lazy';
-  loadWithFallback(img, photo.thumb, photo.file);
-  setUpMasonryTile(item, img);
-  item.appendChild(img);
-
-  const overlay = document.createElement('div');
-  overlay.className = 'item-overlay';
-
-  const bottomBox = document.createElement('div');
-  bottomBox.className = 'overlay-bottom';
-
-  const metaEl = document.createElement('div');
-  metaEl.className = 'overlay-meta';
-  bottomBox.appendChild(metaEl);
-
-  if (photo.caption) {
-    const captionEl = document.createElement('div');
-    captionEl.className = 'overlay-caption';
-    captionEl.textContent = photo.caption;
-    bottomBox.appendChild(captionEl);
+  const n = ar.length;
+  const best = new Array(n + 1).fill(Infinity);
+  const cut = new Array(n + 1).fill(0);
+  best[0] = 0;
+  for (let j = 1; j <= n; j++) {
+    let sum = 0;
+    for (let i = j - 1; i >= 0; i--) {
+      sum += ar[i];
+      const k = j - i;
+      const h = (W - gap * (k - 1)) / sum;
+      if (h < target * 0.45) break;
+      let tall = 0;
+      for (let x = i; x < j; x++) if (ar[x] < 1) tall++;
+      const goal = tall ? target * 1.45 : target;
+      let cost = best[i] + Math.pow(h - goal, 2);
+      for (let x = i; x < j; x++) if (ar[x] < 1 && ar[x] * h < W * 0.26) cost += Math.pow(W * 0.26 - ar[x] * h, 2) * 4;
+      if (k !== 3) cost += preferThree;
+      if (cost < best[j]) { best[j] = cost; cut[j] = i; }
+    }
   }
+  const rows = [];
+  for (let j = n; j > 0; j = cut[j]) rows.unshift([cut[j], j]);
 
-  // EXIF is fetched on first hover/focus only. Fetching it for every tile at
-  // render time downloaded part of each full-size file on page load.
-  let metaRequested = false;
-  const requestMeta = () => {
-    if (metaRequested) return;
-    metaRequested = true;
-    getPhotoMeta(photo).then((metaString) => {
-      if (metaString) metaEl.textContent = metaString;
-    });
-  };
-  item.addEventListener('mouseenter', requestMeta, { once: true });
-  item.addEventListener('focus', requestMeta, { once: true });
-
-  overlay.appendChild(bottomBox);
-  item.appendChild(overlay);
-
-  const open = () => openLightbox(list, index);
-  item.addEventListener('click', open);
-  item.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      open();
+  const dpr = window.devicePixelRatio || 1;
+  rows.forEach(([i, j]) => {
+    let sum = 0;
+    for (let x = i; x < j; x++) sum += ar[x];
+    const h = (W - gap * (j - i - 1)) / sum;
+    for (let x = i; x < j; x++) {
+      const w = ar[x] * h;
+      tiles[x].style.width = w + 'px';
+      tiles[x].style.height = h + 'px';
+      pickSize(tiles[x].querySelector('img'), tiles[x].photo, Math.max(w, h) * dpr);
     }
   });
+}
 
-  return item;
+// Smallest file that's sharp at this tile size; only ever upgrades.
+function pickSize(img, photo, neededPx) {
+  const level = neededPx <= 760 ? 0 : 1;
+  if (img.dataset.level !== undefined && Number(img.dataset.level) >= level) return;
+  img.dataset.level = level;
+  setSource(img, level === 0 ? [photo.thumb, photo.large, photo.file] : [photo.large, photo.file]);
+}
+
+function setSource(img, candidates) {
+  let i = 0;
+  img.onerror = () => { i += 1; if (i < candidates.length) img.src = candidates[i]; };
+  img.src = candidates[0];
+}
+
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => { layoutStrips(homeStrips); layoutStrips(albumStrips); }, 80);
+});
+
+// ---------- Lightbox ----------
+
+async function getPhotoMeta(photo) {
+  if (exifCache.has(photo.file)) return exifCache.get(photo.file);
+  let text = '';
+  if (window.exifr) {
+    const tags = await window.exifr.parse(photo.file, ['Make', 'Model', 'FocalLength', 'FNumber', 'ExposureTime', 'ISO']).catch(() => null);
+    if (tags) {
+      const parts = [];
+      const camera = tags.Model || tags.Make;
+      if (camera) parts.push(camera);
+      if (tags.FocalLength) parts.push(Math.round(tags.FocalLength) + 'mm');
+      if (tags.FNumber) parts.push('ƒ/' + tags.FNumber);
+      if (tags.ExposureTime) parts.push(tags.ExposureTime >= 1 ? tags.ExposureTime + 's' : '1/' + Math.round(1 / tags.ExposureTime) + 's');
+      if (tags.ISO) parts.push('ISO ' + tags.ISO);
+      text = parts.join(' · ');
+    }
+  }
+  exifCache.set(photo.file, text);
+  return text;
 }
 
 function openLightbox(list, index) {
@@ -558,83 +304,27 @@ function openLightbox(list, index) {
 function closeLightbox() {
   lightbox.hidden = true;
   document.body.style.overflow = '';
-  stopSlideshow();
 }
 
 async function showCurrent() {
   const photo = currentList[currentIndex];
-  lbImage.src = photo.file;
   lbImage.alt = photo.caption || '';
+  setSource(lbImage, [photo.file, photo.large]);
   lbCaption.textContent = photo.caption || '';
   lbExif.textContent = '';
-
-  preloadNextPhoto();
-
-  const metaString = await getPhotoMeta(photo);
-  lbExif.textContent = metaString || '';
+  const next = currentList[(currentIndex + 1) % currentList.length];
+  if (next) { const pre = new Image(); pre.src = next.file; }
+  const meta = await getPhotoMeta(photo);
+  if (currentList[currentIndex] === photo) lbExif.textContent = meta;
 }
 
-function showNext() {
-  currentIndex += 1;
-  if (currentIndex >= currentList.length) {
-    currentIndex = 0;
-    if (slideshowActive) {
-      currentList = shuffle(currentList); // new lap, fresh order — same photos, no back-to-back repeats
-    }
-  }
-  showCurrent();
-  resetSlideshowTimer();
-}
+function showNext() { currentIndex = (currentIndex + 1) % currentList.length; showCurrent(); }
+function showPrev() { currentIndex = (currentIndex - 1 + currentList.length) % currentList.length; showCurrent(); }
 
-function showPrev() {
-  currentIndex = (currentIndex - 1 + currentList.length) % currentList.length;
-  showCurrent();
-  resetSlideshowTimer();
-}
-
-lbClose.addEventListener('click', closeLightbox);
-lbNext.addEventListener('click', showNext);
-lbPrev.addEventListener('click', showPrev);
-
-const slideshowBtn = document.getElementById('slideshow-btn');
-if (slideshowBtn) {
-  slideshowBtn.addEventListener('click', startSlideshow);
-}
-
-if (lbMuteBtn) {
-  lbMuteBtn.addEventListener('click', () => {
-    if (!slideshowAudio) return;
-    slideshowAudio.muted = !slideshowAudio.muted;
-    updateMuteButtonLabel();
-  });
-}
-
-lightbox.addEventListener('click', (e) => {
-  if (e.target === lightbox) closeLightbox();
-});
-
-// Swipe navigation (touch devices have no arrow-key or hover affordance)
-let touchStartX = 0;
-let touchStartY = 0;
-let touchTracking = false;
-
-lightbox.addEventListener('touchstart', (e) => {
-  if (e.touches.length !== 1) { touchTracking = false; return; }
-  touchStartX = e.touches[0].clientX;
-  touchStartY = e.touches[0].clientY;
-  touchTracking = true;
-}, { passive: true });
-
-lightbox.addEventListener('touchend', (e) => {
-  if (!touchTracking) return;
-  touchTracking = false;
-  const touch = e.changedTouches[0];
-  if (!touch) return;
-  const dx = touch.clientX - touchStartX;
-  const dy = touch.clientY - touchStartY;
-  if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-  if (dx < 0) showNext(); else showPrev();
-}, { passive: true });
+document.getElementById('lb-close').addEventListener('click', closeLightbox);
+document.getElementById('lb-next').addEventListener('click', showNext);
+document.getElementById('lb-prev').addEventListener('click', showPrev);
+lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
 
 document.addEventListener('keydown', (e) => {
   if (lightbox.hidden) return;
@@ -643,19 +333,21 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowLeft') showPrev();
 });
 
-// Smooth anchor navigation supporting hash-routed views
-document.querySelectorAll('.header-nav a[href^="#"]').forEach((anchor) => {
-  anchor.addEventListener('click', (e) => {
-    const targetId = anchor.getAttribute('href').slice(1);
-    if (!albumView.hidden) {
-      location.hash = '';
-      setTimeout(() => {
-        const el = document.getElementById(targetId);
-        if (el) el.scrollIntoView({ behavior: 'smooth' });
-      }, 50);
-    }
-  });
-});
+// Swipe on touch screens
+let touchX = 0;
+let touchY = 0;
+lightbox.addEventListener('touchstart', (e) => {
+  if (e.touches.length !== 1) return;
+  touchX = e.touches[0].clientX;
+  touchY = e.touches[0].clientY;
+}, { passive: true });
+lightbox.addEventListener('touchend', (e) => {
+  const t = e.changedTouches[0];
+  if (!t) return;
+  const dx = t.clientX - touchX;
+  const dy = t.clientY - touchY;
+  if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+  if (dx < 0) showNext(); else showPrev();
+}, { passive: true });
 
-const yearEl = document.getElementById('year');
-if (yearEl) yearEl.textContent = new Date().getFullYear();
+document.getElementById('year').textContent = new Date().getFullYear();

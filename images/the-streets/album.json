@@ -2,16 +2,16 @@
   "title": "The Streets",
   "cover": "2026-10-21-san-mateo-41.jpg",
   "photos": [
-    {"file": "2026-10-21-san-mateo-41.jpg", "favorite": true},
-    {"file": "2026-10-26-oakland-china-town-53.jpg", "favorite": true},
-    {"file": "2026-09-16-driving-photography-25.jpg", "favorite": true},
-    {"file": "2026-09-16-driving-photography-04.jpg", "favorite": true},
-    {"file": "2026-10-26-oakland-china-town-32.jpg"},
-    {"file": "2026-09-16-driving-photography-22.jpg"},
-    {"file": "2026-09-011-streets-plus-home-26.jpeg"},
-    {"file": "2026-09-16-driving-photography-02.jpg"},
-    {"file": "2026-09-011-streets-plus-home-35.jpeg"},
-    {"file": "2026-10-21-san-mateo-65.jpg"},
-    {"file": "2026-09-011-streets-plus-home-43.jpeg"}
+    {"file": "2026-10-21-san-mateo-41.jpg", "favorite": true, "w": 1080, "h": 608},
+    {"file": "2026-10-26-oakland-china-town-53.jpg", "favorite": true, "w": 720, "h": 1080},
+    {"file": "2026-09-16-driving-photography-25.jpg", "favorite": true, "w": 1080, "h": 720},
+    {"file": "2026-09-16-driving-photography-04.jpg", "favorite": true, "w": 1080, "h": 720},
+    {"file": "2026-10-26-oakland-china-town-32.jpg", "w": 1080, "h": 864},
+    {"file": "2026-09-16-driving-photography-22.jpg", "w": 1080, "h": 720},
+    {"file": "2026-09-011-streets-plus-home-26.jpeg", "w": 854, "h": 1280},
+    {"file": "2026-09-16-driving-photography-02.jpg", "w": 1080, "h": 720},
+    {"file": "2026-09-011-streets-plus-home-35.jpeg", "w": 854, "h": 1280},
+    {"file": "2026-10-21-san-mateo-65.jpg", "w": 1080, "h": 608},
+    {"file": "2026-09-011-streets-plus-home-43.jpeg", "w": 1280, "h": 854}
   ]
 }

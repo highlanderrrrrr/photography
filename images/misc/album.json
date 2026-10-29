@@ -2,16 +2,16 @@
   "title": "Selected Work",
   "cover": "2026-09-06-gregory-house-09.jpeg",
   "photos": [
-    {"file": "2026-09-06-gregory-house-09.jpeg"},
-    {"file": "DSC_2972.jpg"},
-    {"file": "DSC_2337.jpeg", "caption": "Indoor Star - a lamp above our table in a restaurant"},
-    {"file": "DSC_2153.JPG"},
-    {"file": "DSC_2167.JPG"},
-    {"file": "DSC_2387.jpeg"},
-    {"file": "2026-09-011-streets-plus-home-42.jpeg"},
-    {"file": "2026-09-16-driving-photography-05.jpg"},
-    {"file": "2026-09-06-gregory-house-12.jpeg", "caption": "Live-in burglar"},
-    {"file": "DSC_2340.jpeg"},
-    {"file": "2026-09-09-misc-06.jpeg"}
+    {"file": "2026-09-06-gregory-house-09.jpeg", "w": 3712, "h": 5568},
+    {"file": "DSC_2972.jpg", "w": 1080, "h": 782},
+    {"file": "DSC_2337.jpeg", "caption": "Indoor Star - a lamp above our table in a restaurant", "w": 1280, "h": 854},
+    {"file": "DSC_2153.JPG", "w": 5568, "h": 3712},
+    {"file": "DSC_2167.JPG", "w": 5568, "h": 3712},
+    {"file": "DSC_2387.jpeg", "w": 1280, "h": 854},
+    {"file": "2026-09-011-streets-plus-home-42.jpeg", "w": 1280, "h": 854},
+    {"file": "2026-09-16-driving-photography-05.jpg", "w": 1080, "h": 720},
+    {"file": "2026-09-06-gregory-house-12.jpeg", "caption": "Live-in burglar", "w": 3712, "h": 5568},
+    {"file": "DSC_2340.jpeg", "w": 854, "h": 1280},
+    {"file": "2026-09-09-misc-06.jpeg", "w": 1280, "h": 854}
   ]
 }
