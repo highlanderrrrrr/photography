@@ -225,6 +225,9 @@ main a:focus-visible, button:focus-visible, .tile:focus-visible {
 
 /* ---------- Outings (pages made by build-seo.py) ---------- */
 
+.lb-map { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.lb-map:hover { color: #fff; }
+
 .lb-outing {
   display: inline-block;
   margin-top: 0.7rem;

@@ -47,6 +47,16 @@ Each outing is a folder in `outings/` with one file you edit: `outing.txt`.
   and edit its `outing.txt`.
 - Then run `python3 update-site.py`
 
+## Map links (GPS)
+Photos keep their GPS location, and the full-screen viewer shows "View on map" for them.
+Photos taken within 1 mile of a place in `private-places.txt` lose their GPS automatically.
+
+- `private-places.txt` lives only on this Mac. It is never uploaded (it's in `.gitignore`).
+  One place per line: `home: 37.6..., -122.0...` (right-click a spot in Google Maps to copy its numbers).
+- No `private-places.txt` at all = GPS is removed from every photo, to be safe.
+- To give photos already on the site their GPS back from the camera originals:
+  `python3 copy-gps.py "<originals folder>" images/<album or outings/name>` then `python3 update-site.py`
+
 ## Preview, commit, push
 1. `python3 -m http.server 8000`, open http://localhost:8000, look around
 2. Ctrl+C to stop it

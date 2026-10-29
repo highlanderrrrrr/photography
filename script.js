@@ -305,11 +305,21 @@ window.addEventListener('resize', () => {
 
 // ---------- Lightbox ----------
 
+// [degrees, minutes, seconds] + "N"/"S"/"E"/"W" -> signed decimal degrees, or null
+function gpsDegrees(dms, ref) {
+  if (typeof dms === 'number') return /[SW]/i.test(ref || '') ? -Math.abs(dms) : dms;
+  if (!Array.isArray(dms) || dms.length < 2) return null;
+  const v = Number(dms[0]) + Number(dms[1]) / 60 + Number(dms[2] || 0) / 3600;
+  if (!isFinite(v)) return null;
+  return /[SW]/i.test(ref || '') ? -v : v;
+}
+
 async function getPhotoMeta(photo) {
   if (exifCache.has(photo.file)) return exifCache.get(photo.file);
   let text = '';
+  let map = '';
   if (window.exifr) {
-    const tags = await window.exifr.parse(photo.file, ['Make', 'Model', 'FocalLength', 'FNumber', 'ExposureTime', 'ISO']).catch(() => null);
+    const tags = await window.exifr.parse(photo.file, { pick: ['Make', 'Model', 'FocalLength', 'FNumber', 'ExposureTime', 'ISO', 'GPSLatitude', 'GPSLongitude', 'GPSLatitudeRef', 'GPSLongitudeRef'] }).catch(() => null);
     if (tags) {
       const parts = [];
       const camera = tags.Model || tags.Make;
@@ -319,10 +329,16 @@ async function getPhotoMeta(photo) {
       if (tags.ExposureTime) parts.push(tags.ExposureTime >= 1 ? tags.ExposureTime + 's' : '1/' + Math.round(1 / tags.ExposureTime) + 's');
       if (tags.ISO) parts.push('ISO ' + tags.ISO);
       text = parts.join(' · ');
+      const lat = typeof tags.latitude === 'number' ? tags.latitude : gpsDegrees(tags.GPSLatitude, tags.GPSLatitudeRef);
+      const lon = typeof tags.longitude === 'number' ? tags.longitude : gpsDegrees(tags.GPSLongitude, tags.GPSLongitudeRef);
+      if (lat !== null && lon !== null) {
+        map = 'https://www.google.com/maps?q=' + lat.toFixed(6) + ',' + lon.toFixed(6);
+      }
     }
   }
-  exifCache.set(photo.file, text);
-  return text;
+  const meta = { text, map };
+  exifCache.set(photo.file, meta);
+  return meta;
 }
 
 function openLightbox(list, index) {
@@ -366,7 +382,18 @@ async function showCurrent() {
   const next = currentList[(currentIndex + 1) % currentList.length];
   if (next) { const pre = new Image(); pre.src = next.file; }
   const meta = await getPhotoMeta(photo);
-  if (currentList[currentIndex] === photo) lbExif.textContent = meta;
+  if (currentList[currentIndex] !== photo) return;
+  lbExif.textContent = meta.text;
+  if (meta.map) {
+    const a = document.createElement('a');
+    a.className = 'lb-map';
+    a.href = meta.map;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.textContent = 'View on map \u2197';
+    if (meta.text) lbExif.append(' \u00b7 ');
+    lbExif.append(a);
+  }
 }
 
 function showNext() { currentIndex = (currentIndex + 1) % currentList.length; showCurrent(); }
