@@ -266,6 +266,7 @@ main a:focus-visible, button:focus-visible, .tile:focus-visible {
 .o-page { padding-top: 8px; }
 .o-back { display: inline-block; font-family: var(--sans); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 22px; }
 .o-cover { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 56px; align-items: start; margin-bottom: 64px; }
+.o-cover--wide { align-items: center; }
 .o-cover-img { display: block; justify-self: start; cursor: zoom-in; background: none; width: auto; height: auto; }
 .o-cover-img img { display: block; width: auto; max-width: 100%; height: auto; max-height: 82vh; }
 .o-eyebrow { font-family: var(--sans); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }

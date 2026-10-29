@@ -558,10 +558,12 @@ for o in outings:
     cover_html = (f'          <a class="o-cover-img tile" href="{esc(large_url(cover["key"]))}" data-n="0">'
                   f'<img src="{esc(large_url(cover["key"]))}" alt="{esc(cover["caption"])}"></a>') if cover else ""
     eyebrow = f"Outing · {meta['where']}" if meta.get("where") else "Outing"
+    # A horizontal cover sits centered against the text; a vertical one lines up at the top.
+    cover_shape = " o-cover--wide" if cover and cover.get("w") and cover.get("h") and cover["w"] > cover["h"] else ""
     intro_html = "\n".join(f"          <p>{esc(t)}</p>" for t in intro)
     main = f"""      <article class="o-page">
         <a class="back o-back" href="/outings/">&larr; Outings</a>
-        <header class="o-cover">
+        <header class="o-cover{cover_shape}">
 {cover_html}
           <div class="o-cover-text">
             <span class="o-eyebrow">{esc(eyebrow)}</span>
