@@ -10,6 +10,25 @@ It reads albums.json and images/<album>/album.json and rewrites:
   - robots.txt                 lets every crawler in, points to the sitemap
   - llms.txt                   short text summary of the site for AI assistants
   - index.html                 only the parts between the "seo" markers
+  - outings/index.html         the Outings list, newest first
+  - outings/<name>/index.html  one page per outing, from outings/<name>/outing.txt
+  - outings/outings.json       which outing each photo belongs to (for the link in the viewer)
+
+An outing.txt looks like this (edit the text freely, keep the "key: value" lines and the ---):
+    title: Oakland Chinatown - Murals, Vendors and the Produce Market
+    date: 2026-10-26
+    gear: Nikon D7500, 18-200mm
+    summary: One or two sentences for the Outings list.
+    photos:
+    the-streets/2026-10-26-oakland-china-town-53.jpg
+    outings/oakland-chinatown/storefront.jpg | Asian Branch - Morning outside the library.
+    ---
+    First paragraph.
+
+    Second paragraph.
+Photos are paths under images/, in the order they should appear. Album photos use their
+album caption; for outing-only photos add " | Title - comment" after the path.
+Usually run through update-site.py, which also prepares the photos.
 """
 import html
 import json
@@ -146,7 +165,7 @@ for i, a in enumerate(albums):
 <body>
 <div class="wrap">
 <header><a class="name" href="/">{NAME}</a>
-<nav aria-label="Main"><a href="/">Work</a><a href="/#collections">Collections</a><a href="/#about">About</a><a href="/#contact">Contact</a></nav></header>
+<nav aria-label="Main"><a href="/">Work</a><a href="/#collections">Collections</a><a href="/outings/">Outings</a><a href="/#about">About</a><a href="/#contact">Contact</a></nav></header>
 <main>
 <h1>{esc(title)}</h1>
 <p class="intro">{len(a['photos'])} photographs. <a href="/#album/{folder}">Open in the full-screen viewer</a></p>
@@ -160,6 +179,209 @@ for i, a in enumerate(albums):
 """
     write(f"albums/{folder}/index.html", page)
 
+# ---------- outings ----------
+def read_outing(folder):
+    with open(os.path.join(ROOT, "outings", folder, "outing.txt"), encoding="utf-8") as f:
+        raw = f.read().replace("\r\n", "\n")
+    head, _, body = raw.partition("\n---\n")
+    meta, photos, in_photos = {}, [], False
+    for line in head.split("\n"):
+        line = line.strip()
+        if not line:
+            continue
+        if in_photos and ":" not in line.split("/")[0]:
+            key, _, cap = line.partition(" | ")
+            photos.append((key.strip(), cap.strip()))
+            continue
+        key, _, value = line.partition(":")
+        key = key.strip().lower()
+        in_photos = key == "photos"
+        if not in_photos:
+            meta[key] = value.strip()
+    paras = [" ".join(p.split()) for p in body.strip().split("\n\n") if p.strip()]
+    return {"folder": folder, "title": meta.get("title", folder), "date": meta.get("date", ""),
+            "gear": meta.get("gear", ""), "summary": meta.get("summary", ""), "photos": photos, "paras": paras}
+
+
+def nice_date(iso):
+    try:
+        d = date.fromisoformat(iso)
+        return d.strftime("%A, %B ") + str(d.day) + d.strftime(", %Y")
+    except ValueError:
+        return iso
+
+
+captions = {}
+sizes = {}
+for a in albums:
+    for p in a["photos"]:
+        key = f"{a['folder']}/{p['file']}"
+        captions[key] = p.get("caption") or ""
+        sizes[key] = (p.get("w"), p.get("h"))
+
+
+def photo_info(key, caption=""):
+    w, h = sizes.get(key, (None, None))
+    if not w:
+        try:
+            from PIL import Image
+            with Image.open(os.path.join(ROOT, "images", key)) as im:
+                w, h = im.size
+        except Exception:
+            w, h = None, None
+    return {"key": key, "caption": caption or captions.get(key, ""), "w": w, "h": h}
+
+
+def large_url(key):
+    folder, _, file = key.rpartition("/")
+    return img_url(folder, file)
+
+
+outings = []
+outings_dir = os.path.join(ROOT, "outings")
+if os.path.isdir(outings_dir):
+    for folder in sorted(os.listdir(outings_dir)):
+        if os.path.isfile(os.path.join(outings_dir, folder, "outing.txt")):
+            o = read_outing(folder)
+            missing = [k for k, _ in o["photos"] if not os.path.exists(os.path.join(ROOT, "images", k))]
+            for k in missing:
+                print(f"  warning: outing {folder}: no image at images/{k} (skipped)")
+            o["photos"] = [photo_info(k, c) for k, c in o["photos"] if k not in missing]
+            outings.append(o)
+outings.sort(key=lambda o: o["date"], reverse=True)
+
+with open(os.path.join(ROOT, "index.html"), encoding="utf-8") as f:
+    _idx = f.read()
+_m = re.search(r'<header class="site-header">.*?</header>', _idx, flags=re.S)
+site_header = _m.group(0) if _m else ""
+site_header = re.sub(r'href="#"', 'href="/"', site_header)
+site_header = re.sub(r'href="#', 'href="/#', site_header)
+site_header = site_header.replace('<a href="/outings/">Outings</a>', '<a href="/outings/" aria-current="page">Outings</a>')
+_lb = re.search(r'<div id="lightbox".*?\n  </div>\n', _idx, flags=re.S)
+lightbox_html = _lb.group(0) if _lb else ""
+_v = re.search(r'style\.css\?v=(\d+)', _idx)
+css_v = _v.group(1) if _v else "1"
+_v = re.search(r'script\.js\?v=(\d+)', _idx)
+js_v = _v.group(1) if _v else "1"
+
+GOAT = """  <script>
+    window.goatcounter = { no_onload: true };
+    window.addEventListener('load', function () {
+      if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: location.pathname });
+    });
+  </script>
+  <script data-goatcounter="https://leesagi.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>"""
+
+
+def outing_shell(title, desc, url, image, ld, main, extra_body=""):
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{esc(title)}</title>
+  <meta name="description" content="{esc(desc)}">
+  <link rel="canonical" href="{url}">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="{NAME} Photography">
+  <meta property="og:title" content="{esc(title)}">
+  <meta property="og:description" content="{esc(desc)}">
+  <meta property="og:url" content="{url}">
+  <meta property="og:image" content="{SITE}{esc(image)}">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css?v={css_v}">
+  <script src="https://cdn.jsdelivr.net/npm/exifr/dist/full.umd.js"></script>
+  <link rel="icon" type="image/png" href="/favicon/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg" />
+  <link rel="shortcut icon" href="/favicon/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
+  <script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>
+</head>
+<body>
+  <div class="wrap">
+    {site_header}
+
+    <main>
+{main}
+    </main>
+
+    <footer class="site-footer"><span>{NAME}</span><span>&copy; <span id="year">{date.today().year}</span></span></footer>
+  </div>
+{extra_body}
+{GOAT}
+</body>
+</html>
+"""
+
+
+photo_outings = {}
+for o in outings:
+    url = f"{SITE}/outings/{o['folder']}/"
+    short = o["title"].split(" - ")[0].strip()
+    for p in o["photos"]:
+        photo_outings.setdefault(p["key"], {"url": f"/outings/{o['folder']}/", "short": short})
+    paras = "\n".join(f"          <p>{esc(t)}</p>" for t in o["paras"])
+    tiles = "\n".join(
+        f'          <a class="tile" href="{esc(large_url(p["key"]))}" style="width:{round(300 * (p["w"] / p["h"])) if p["w"] else 300}px;height:300px">'
+        f'<img src="{esc(large_url(p["key"]))}" alt="{esc(p["caption"])}" loading="lazy"></a>'
+        for p in o["photos"])
+    main = f"""      <article>
+        <header class="outing-head">
+          <a class="back" href="/outings/">&larr; Outings</a>
+          <h1>{esc(o['title'])}</h1>
+          <p class="outing-date">{esc(nice_date(o['date']))}{' · ' + esc(o['gear']) if o['gear'] else ''}</p>
+        </header>
+        <div class="outing-text">
+{paras}
+        </div>
+        <div id="outing-strips" class="strips" aria-label="Photographs">
+{tiles}
+        </div>
+        <p class="outing-foot"><a href="/outings/">&larr; All outings</a></p>
+      </article>"""
+    data = {"photos": o["photos"]}
+    extra = (f"\n  {lightbox_html}\n  <script type=\"application/json\" id=\"outing-data\">{json.dumps(data, ensure_ascii=False)}</script>\n"
+             f"  <script src=\"/script.js?v={js_v}\"></script>")
+    ld = {"@context": "https://schema.org", "@graph": [person, {
+        "@type": "Article", "headline": o["title"], "url": url, "datePublished": o["date"],
+        "author": {"@id": f"{SITE}/#lee"}, "description": o["summary"],
+        "image": [{"@type": "ImageObject", "contentUrl": f"{SITE}/images/{p['key']}", "caption": p["caption"],
+                   "creator": {"@id": f"{SITE}/#lee"}, "creditText": NAME, "copyrightNotice": f"© {NAME}"} for p in o["photos"]]}]}
+    cover = large_url(o["photos"][0]["key"]) if o["photos"] else "/logo.png"
+    page = outing_shell(f"{o['title']} | {NAME} Photography", o["summary"], url, cover, ld, main, extra)
+    # The tiles above are plain links so the page reads without JavaScript; script.js rebuilds them as the photo rows.
+    write(f"outings/{o['folder']}/index.html", page)
+
+if outings or os.path.isdir(outings_dir):
+    rows = []
+    for o in outings:
+        cover = large_url(o["photos"][0]["key"]) if o["photos"] else "/logo.png"
+        n = len(o["photos"])
+        rows.append(f"""        <a class="outing-row" href="/outings/{o['folder']}/">
+          <img src="{esc(cover)}" alt="{esc(o['photos'][0]['caption'] if o['photos'] else '')}" loading="lazy">
+          <div>
+            <h2>{esc(o['title'])}</h2>
+            <p class="outing-date">{esc(nice_date(o['date']))} · {n} photograph{'s' if n != 1 else ''}</p>
+            <p class="lead">{esc(o['summary'])}</p>
+            <span class="go">Read the outing &rarr;</span>
+          </div>
+        </a>""")
+    main = f"""      <h1 class="page-title">Outings</h1>
+      <div class="outing-list">
+{chr(10).join(rows)}
+      </div>"""
+    ld = {"@context": "https://schema.org", "@graph": [person, {
+        "@type": "CollectionPage", "name": f"Outings | {NAME} Photography", "url": f"{SITE}/outings/",
+        "hasPart": [{"@type": "Article", "headline": o["title"], "url": f"{SITE}/outings/{o['folder']}/"} for o in outings]}]}
+    first = large_url(outings[0]["photos"][0]["key"]) if outings and outings[0]["photos"] else "/logo.png"
+    write("outings/index.html", outing_shell(f"Outings | {NAME} Photography",
+          f"Photo outings by {NAME} around the East Bay and the Peninsula: where I went, what the light did, and the photos that held up.",
+          f"{SITE}/outings/", first, ld, main, f'\n  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>'))
+    write("outings/outings.json", json.dumps(photo_outings, ensure_ascii=False, indent=1) + "\n")
+
 # ---------- sitemap ----------
 urls = [f"""  <url>
     <loc>{SITE}/</loc>
@@ -170,6 +392,18 @@ for a in albums:
                      for p in a["photos"])
     urls.append(f"""  <url>
     <loc>{SITE}/albums/{a['folder']}/</loc>
+    <lastmod>{TODAY}</lastmod>
+{imgs}
+  </url>""")
+if outings:
+    urls.append(f"""  <url>
+    <loc>{SITE}/outings/</loc>
+    <lastmod>{TODAY}</lastmod>
+  </url>""")
+for o in outings:
+    imgs = "\n".join(f"""    <image:image><image:loc>{SITE}/images/{esc(p['key'])}</image:loc></image:image>""" for p in o["photos"])
+    urls.append(f"""  <url>
+    <loc>{SITE}/outings/{o['folder']}/</loc>
     <lastmod>{TODAY}</lastmod>
 {imgs}
   </url>""")
@@ -186,6 +420,10 @@ lines = [f"# {NAME} Photography", "", f"> Photographs by {NAME}. {FACTS}", "", A
          "Contact: harbor.lens.studio@gmail.com", "", "## Collections", ""]
 for a in albums:
     lines.append(f"- [{a['title']}]({SITE}/albums/{a['folder']}/): {len(a['photos'])} photographs")
+if outings:
+    lines += ["", "## Outings", ""]
+    for o in outings:
+        lines.append(f"- [{o['title']}]({SITE}/outings/{o['folder']}/) ({o['date']}): {o['summary']}")
 for a in albums:
     lines += ["", f"## {a['title']}", ""]
     for p in a["photos"]:
@@ -231,4 +469,4 @@ else:
 with open(idx_path, "w", encoding="utf-8") as f:
     f.write(idx)
 
-print(f"Done: {len(albums)} album pages, sitemap.xml, robots.txt, llms.txt, index.html updated.")
+print(f"Done: {len(albums)} album pages, {len(outings)} outing pages, sitemap.xml, robots.txt, llms.txt, index.html updated.")

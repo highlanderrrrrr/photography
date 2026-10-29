@@ -68,4 +68,20 @@
     <image:image><image:loc>https://leesagi.com/images/misc/DSC_2340.jpeg</image:loc></image:image>
     <image:image><image:loc>https://leesagi.com/images/misc/2026-09-09-misc-06.jpeg</image:loc></image:image>
   </url>
+  <url>
+    <loc>https://leesagi.com/outings/</loc>
+    <lastmod>2026-10-29</lastmod>
+  </url>
+  <url>
+    <loc>https://leesagi.com/outings/oakland-chinatown-murals-vendors-produce-market/</loc>
+    <lastmod>2026-10-29</lastmod>
+    <image:image><image:loc>https://leesagi.com/images/the-streets/2026-10-26-oakland-china-town-53.jpg</image:loc></image:image>
+    <image:image><image:loc>https://leesagi.com/images/the-streets/2026-10-26-oakland-china-town-32.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://leesagi.com/outings/downtown-san-mateo-gray-morning/</loc>
+    <lastmod>2026-10-29</lastmod>
+    <image:image><image:loc>https://leesagi.com/images/the-streets/2026-10-21-san-mateo-41.jpg</image:loc></image:image>
+    <image:image><image:loc>https://leesagi.com/images/the-streets/2026-10-21-san-mateo-65.jpg</image:loc></image:image>
+  </url>
 </urlset>

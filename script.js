@@ -38,9 +38,40 @@ const lightbox = document.getElementById('lightbox');
 const lbImage = document.getElementById('lb-image');
 const lbCaption = document.getElementById('lb-caption');
 const lbExif = document.getElementById('lb-exif');
+const lbOuting = document.getElementById('lb-outing');
+// Outing pages (outings/<name>/index.html) carry their photos in this tag instead of using albums.json
+const outingData = document.getElementById('outing-data');
+const outingStrips = document.getElementById('outing-strips');
+// Which outing each photo belongs to (made by build-seo.py), for the link under the caption
+let photoOutings = {};
 
 // ---------- Loading ----------
 
+if (outingData) {
+  initOuting();
+} else {
+  fetch('/outings/outings.json')
+    .then((res) => (res.ok ? res.json() : {}))
+    .then((map) => { photoOutings = map || {}; })
+    .catch(() => {});
+  loadSite();
+}
+
+function initOuting() {
+  const data = JSON.parse(outingData.textContent);
+  const photos = data.photos.map((p) => ({
+    key: p.key,
+    file: '/images/' + p.key,
+    large: '/images/' + p.key.replace(/\/([^/]+)$/, '/large/$1'),
+    thumb: '/images/' + p.key.replace(/\/([^/]+)$/, '/thumbnails/$1'),
+    caption: p.caption || '',
+    ratio: p.w && p.h ? p.w / p.h : 0
+  }));
+  buildStrips(outingStrips, photos);
+  layoutStrips(outingStrips);
+}
+
+function loadSite() {
 fetch('albums.json')
   .then((res) => {
     if (!res.ok) throw new Error('albums.json not found');
@@ -62,6 +93,7 @@ fetch('albums.json')
     emptyState.textContent = 'Could not load albums.json. Check the browser console.';
     emptyState.hidden = false;
   });
+}
 
 function loadAlbum(dir) {
   const base = 'images/' + dir + '/';
@@ -268,7 +300,7 @@ function setSource(img, candidates) {
 let resizeTimer;
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => { layoutStrips(homeStrips); layoutStrips(albumStrips); }, 80);
+  resizeTimer = setTimeout(() => { layoutStrips(homeStrips); layoutStrips(albumStrips); layoutStrips(outingStrips); }, 80);
 });
 
 // ---------- Lightbox ----------
@@ -311,7 +343,7 @@ function trackPhoto(photo) {
   try {
     if (window.goatcounter && window.goatcounter.count) {
       window.goatcounter.count({
-        path: 'photo: ' + photo.file.replace(/^images\//, ''),
+        path: 'photo: ' + photo.file.replace(/^\/?images\//, ''),
         title: photo.caption || '',
         event: true,
       });
@@ -326,6 +358,11 @@ async function showCurrent() {
   setSource(lbImage, [photo.file, photo.large]);
   lbCaption.textContent = photo.caption || '';
   lbExif.textContent = '';
+  const outing = photoOutings[photo.key];
+  if (lbOuting) {
+    lbOuting.hidden = !outing;
+    if (outing) { lbOuting.href = outing.url; lbOuting.textContent = 'From the outing: ' + outing.short + ' \u2192'; }
+  }
   const next = currentList[(currentIndex + 1) % currentList.length];
   if (next) { const pre = new Image(); pre.src = next.file; }
   const meta = await getPhotoMeta(photo);
