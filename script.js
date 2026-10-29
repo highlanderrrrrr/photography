@@ -306,8 +306,22 @@ function closeLightbox() {
   document.body.style.overflow = '';
 }
 
+// GoatCounter: log each photo shown in the lightbox as an event
+function trackPhoto(photo) {
+  try {
+    if (window.goatcounter && window.goatcounter.count) {
+      window.goatcounter.count({
+        path: 'photo: ' + photo.file.replace(/^images\//, ''),
+        title: photo.caption || '',
+        event: true,
+      });
+    }
+  } catch (e) { /* analytics blocked or not loaded */ }
+}
+
 async function showCurrent() {
   const photo = currentList[currentIndex];
+  trackPhoto(photo);
   lbImage.alt = photo.caption || '';
   setSource(lbImage, [photo.file, photo.large]);
   lbCaption.textContent = photo.caption || '';

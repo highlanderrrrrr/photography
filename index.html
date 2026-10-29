@@ -130,6 +130,20 @@
     </div>
   </div>
 
-  <script src="script.js?v=40"></script>
+  <script src="script.js?v=41"></script>
+
+  <!-- GoatCounter: counts each page, including #album, #about and #contact -->
+  <script>
+    window.goatcounter = { no_onload: true };
+    function gcCountPage() {
+      if (window.goatcounter && window.goatcounter.count) {
+        window.goatcounter.count({ path: location.pathname + location.hash });
+      }
+    }
+    window.addEventListener('load', gcCountPage);
+    window.addEventListener('hashchange', gcCountPage);
+  </script>
+  <script data-goatcounter="https://leesagi.goatcounter.com/count"
+          async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
