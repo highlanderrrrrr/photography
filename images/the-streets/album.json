@@ -2,16 +2,16 @@
   "title": "The Streets",
   "cover": "2026-10-21-san-mateo-41.jpg",
   "photos": [
-    {"file": "2026-10-21-san-mateo-41.jpg", "favorite": true, "w": 1080, "h": 608},
-    {"file": "2026-10-26-oakland-china-town-53.jpg", "favorite": true, "w": 720, "h": 1080},
-    {"file": "2026-09-16-driving-photography-25.jpg", "favorite": true, "w": 1080, "h": 720},
-    {"file": "2026-09-16-driving-photography-04.jpg", "favorite": true, "w": 1080, "h": 720},
-    {"file": "2026-10-26-oakland-china-town-32.jpg", "w": 1080, "h": 864},
-    {"file": "2026-09-16-driving-photography-22.jpg", "w": 1080, "h": 720},
-    {"file": "2026-09-011-streets-plus-home-26.jpeg", "w": 854, "h": 1280},
-    {"file": "2026-09-16-driving-photography-02.jpg", "w": 1080, "h": 720},
-    {"file": "2026-09-011-streets-plus-home-35.jpeg", "w": 854, "h": 1280},
-    {"file": "2026-10-21-san-mateo-65.jpg", "w": 1080, "h": 608},
-    {"file": "2026-09-011-streets-plus-home-43.jpeg", "w": 1280, "h": 854}
+    {"file": "2026-10-21-san-mateo-41.jpg", "caption": "Right of Way - Homeless person with a loaded cart and a long crosswalk on San Mateo Drive.", "favorite": true, "w": 1080, "h": 608},
+    {"file": "2026-10-26-oakland-china-town-53.jpg", "caption": "One Match - A cigarette, a can and a sliver of sun in Oakland Chinatown.", "favorite": true, "w": 720, "h": 1080},
+    {"file": "2026-09-16-driving-photography-25.jpg", "caption": "Invisible Inventory - Everything packed and within reach on a strip of sidewalk.", "favorite": true, "w": 1080, "h": 720},
+    {"file": "2026-09-16-driving-photography-04.jpg", "caption": "Stop - A crossing guard holding the street with one arm.", "favorite": true, "w": 1080, "h": 720},
+    {"file": "2026-10-26-oakland-china-town-32.jpg", "caption": "Corner Watch - Waiting at a corner in Oakland Chinatown.", "w": 1080, "h": 864},
+    {"file": "2026-09-16-driving-photography-22.jpg", "caption": "Peekaboo - A face at the edge of a rolled-down shutter in San Leandro.", "w": 1080, "h": 720},
+    {"file": "2026-09-011-streets-plus-home-26.jpeg", "caption": "Lady In Red - A human color palette", "w": 854, "h": 1280},
+    {"file": "2026-09-16-driving-photography-02.jpg", "caption": "All Clear - A kick ass crossing guard in mid-wave.", "w": 1080, "h": 720},
+    {"file": "2026-09-011-streets-plus-home-35.jpeg", "caption": "Facts Of Life - Resting their weight on a walker, halfway down the block.", "w": 854, "h": 1280},
+    {"file": "2026-10-21-san-mateo-65.jpg", "caption": "The Ghost of San Mateo - A pedestrian dissolving into the crosswalk on San Mateo Drive.", "w": 1080, "h": 608},
+    {"file": "2026-09-011-streets-plus-home-43.jpeg", "caption": "Crossing - One wheelchair, one wide empty intersection.", "w": 1280, "h": 854}
   ]
 }

@@ -2,10 +2,10 @@
   "title": "Birds",
   "cover": "2026-10-05-pacifica-65.jpg",
   "photos": [
-    {"file": "2026-10-05-pacifica-63.jpg", "favorite": true, "w": 1080, "h": 1080},
-    {"file": "2026-10-05-pacifica-65.jpg", "favorite": true, "w": 1080, "h": 685},
-    {"file": "2026-10-05-pacifica-18.jpg", "w": 720, "h": 1080},
-    {"file": "2026-10-05-pacifica-57.jpg", "w": 1042, "h": 1080},
+    {"file": "2026-10-05-pacifica-63.jpg", "caption": "Watcher - A raven in close-up, Pacifica.", "favorite": true, "w": 1080, "h": 1080},
+    {"file": "2026-10-05-pacifica-65.jpg", "caption": "Roll Call - Crows spaced down a fence line in the Pacifica fog...Hitchcock is smiling in his grave.", "favorite": true, "w": 1080, "h": 685},
+    {"file": "2026-10-05-pacifica-18.jpg", "caption": "Paid in Peanuts - A raven collecting its fee, Pacifica.", "w": 720, "h": 1080},
+    {"file": "2026-10-05-pacifica-57.jpg", "caption": "Two of a Kind - Two ravens sharing one fence post, Pacifica.", "w": 1042, "h": 1080},
     {"file": "2026-09-09-misc-01.jpeg", "caption": "Lone Star - saw this eagle surveying his territory while walking the dog", "w": 1280, "h": 854}
   ]
 }

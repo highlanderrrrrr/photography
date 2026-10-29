@@ -2,12 +2,12 @@
   "title": "Faces",
   "cover": "2026-09-011-streets-plus-home-08.jpg",
   "photos": [
-    {"file": "2026-09-011-streets-plus-home-08.jpg", "w": 1080, "h": 720},
-    {"file": "2026-10-10-dahlia-homecoming-19.jpg", "w": 1080, "h": 1006},
-    {"file": "DSC_2334.jpeg", "w": 1280, "h": 854},
-    {"file": "DSC_2711.jpeg", "w": 1280, "h": 854},
-    {"file": "2026-09-06-gregory-house-18.jpeg", "w": 2747, "h": 4121},
-    {"file": "2026-09-06-gregory-house-15.jpeg", "w": 3849, "h": 2566},
-    {"file": "2026-09-06-gregory-house-06.jpeg", "w": 4011, "h": 2674}
+    {"file": "2026-09-011-streets-plus-home-08.jpg", "caption": "Unguarded - A laugh caught before she could stop it.", "w": 1080, "h": 720},
+    {"file": "2026-10-10-dahlia-homecoming-19.jpg", "caption": "Homecoming - Backlit, a few minutes before the dance.", "w": 1080, "h": 1006},
+    {"file": "DSC_2334.jpeg", "caption": "Coolest Girl - A quiet moment at dinner.", "w": 1280, "h": 854},
+    {"file": "DSC_2711.jpeg", "caption": "Somewhere Else - Chin on her hands, eyes on something outside.", "w": 1280, "h": 854},
+    {"file": "2026-09-06-gregory-house-18.jpeg", "caption": "Off Camera - Arms crossed, eyes on something out of frame.", "w": 2747, "h": 4121},
+    {"file": "2026-09-06-gregory-house-15.jpeg", "caption": "No Comment - Digging for gold", "w": 3849, "h": 2566},
+    {"file": "2026-09-06-gregory-house-06.jpeg", "caption": "Afternoon Coffee - Settled in.", "w": 4011, "h": 2674}
   ]
 }

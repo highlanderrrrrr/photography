@@ -2,15 +2,15 @@
   "title": "Land & Sky",
   "cover": "2026-10-05-pacifica-06.jpg",
   "photos": [
-    {"file": "2026-10-05-pacifica-06.jpg", "w": 1080, "h": 720},
-    {"file": "DSC_3107.jpg", "w": 1080, "h": 720},
-    {"file": "2026-10-05-pacifica-46.jpg", "w": 1080, "h": 608},
-    {"file": "2026-09-29-misc-09.jpg", "w": 1080, "h": 720},
-    {"file": "DSC_3160.jpg", "w": 1080, "h": 608},
-    {"file": "DSC_3168.jpg", "w": 1080, "h": 608},
-    {"file": "DSC_3172.jpg", "w": 720, "h": 1080},
-    {"file": "DSC_3157.jpg", "w": 1080, "h": 608},
-    {"file": "DSC_3158.jpg", "w": 1079, "h": 607},
-    {"file": "2026-10-02-misc-29.jpg", "w": 1080, "h": 720}
+    {"file": "2026-10-05-pacifica-06.jpg", "caption": "Lines in the Fog - Surf fishermen and their rods along the Pacifica shore.", "w": 1080, "h": 720},
+    {"file": "DSC_3107.jpg", "caption": "Brushstrokes - Wind-torn clouds over a dark ridge from my backyard.", "w": 1080, "h": 720},
+    {"file": "2026-10-05-pacifica-46.jpg", "caption": "Two Casts - Two anglers working the surf in the Pacifica fog.", "w": 1080, "h": 608},
+    {"file": "2026-09-29-misc-09.jpg", "caption": "Weather Coming - Clouds stacking up over the hills from my backyard.", "w": 1080, "h": 720},
+    {"file": "DSC_3160.jpg", "caption": "Blue Silhouettes - Pilings and trees against a hard blue sky, San Leandro Marina.", "w": 1080, "h": 608},
+    {"file": "DSC_3168.jpg", "caption": "Lone Tree - A single tree under a long streak of cloud, San Leandro shoreline.", "w": 1080, "h": 608},
+    {"file": "DSC_3172.jpg", "caption": "What's Left - A split stump facing the bay, San Leandro.", "w": 720, "h": 1080},
+    {"file": "DSC_3157.jpg", "caption": "Framed - The marina through the branches, San Leandro.", "w": 1080, "h": 608},
+    {"file": "DSC_3158.jpg", "caption": "Reflections - Marina posts doubled in flat water, San Leandro.", "w": 1079, "h": 607},
+    {"file": "2026-10-02-misc-29.jpg", "caption": "Last Light - Sunset through the brush from my backyard.", "w": 1080, "h": 720}
   ]
 }
