@@ -30,7 +30,7 @@ Each outing is a folder in `outings/` with one file you edit: `outing.txt`.
     summary: One or two sentences for the Outings list.
     photos:
     the-streets/2026-10-26-oakland-china-town-53.jpg
-    outings/oakland-chinatown/storefront.jpg | Asian Branch - Morning outside the library.
+    outings/oakland-chinatown-murals-vendors-produce-market/library.jpg | Asian Branch - Morning outside the library.
     ---
     First paragraph.
 
@@ -38,8 +38,10 @@ Each outing is a folder in `outings/` with one file you edit: `outing.txt`.
 
 - `photos:` lists files under `images/`, in display order. The first one is the cover.
 - A photo that's already in an album: list it as `<album>/<file>`. No copy needed.
-- An outing-only photo (context shot): put it in `images/outings/<outing-name>/`
-  and list it as `outings/<outing-name>/<file> | Title - comment` (the caption is optional).
+- An outing-only photo (context shot): drop it in `images/outings/<outing-name>/`
+  (same folder name as in `outings/`) and run `python3 update-site.py`. It's added to
+  `photos:` automatically, at the end. Move the line to reorder, and add
+  ` | Title - comment` after it for a caption. Delete the file and its line goes too.
 - New outing: copy an existing outing folder, rename it (the name becomes the web
   address, e.g. `leesagi.com/outings/oakland-chinatown-murals-vendors-produce-market/`),
   and edit its `outing.txt`.

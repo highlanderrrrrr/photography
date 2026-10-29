@@ -11,6 +11,7 @@ What it does, for every photo in images/<album>/ and images/outings/<name>/:
        thumbnails/   800px, for small tiles
   4. Adds new photos to that album's album.json (at the end), with their size.
      Photos you deleted from the folder are removed from album.json too.
+     For images/outings/<name>/, it does the same to outings/<name>/outing.txt.
   5. Runs build-seo.py, which rebuilds the album pages, Outings pages,
      sitemap.xml, robots.txt and llms.txt.
 
@@ -178,6 +179,55 @@ def update_album(folder, found):
             f.write(dump_album(album))
 
 
+# ---------- outing.txt ----------
+
+def is_photo_line(line):
+    return bool(line) and ":" not in line.split("/")[0]
+
+
+def sync_outing(name, found):
+    """Make outings/<name>/outing.txt list every photo in images/outings/<name>/.
+    New photos are added at the end of the photos list; lines for deleted photos are removed.
+    Album photos (the-streets/... and so on) are left alone."""
+    path = os.path.join(ROOT, "outings", name, "outing.txt")
+    if not os.path.isfile(path):
+        print(f"  warning: images/outings/{name}/ has no matching outings/{name}/outing.txt, "
+              f"so its photos aren't on any page. The two folder names must match.")
+        return
+    with open(path, encoding="utf-8") as f:
+        lines = f.read().replace("\r\n", "\n").split("\n")
+    prefix = f"outings/{name}/"
+    end = lines.index("---") if "---" in lines else len(lines)
+    start = next((i for i in range(end) if lines[i].strip().lower().startswith("photos:")), None)
+    if start is None:
+        lines.insert(end, "photos:")
+        start, end = end, end + 1
+    # the photos list runs from start+1 until the next "key:" line or the ---
+    stop = start + 1
+    while stop < end and (not lines[stop].strip() or is_photo_line(lines[stop].strip())):
+        stop += 1
+    listed, changed, block = set(), False, []
+    for line in lines[start + 1:stop]:
+        key = line.strip().partition(" | ")[0].strip()
+        if key.startswith(prefix) and key[len(prefix):] not in found:
+            print(f"  outings/{name}/outing.txt: removed {key} (file is gone)")
+            changed = True
+            continue
+        listed.add(key)
+        block.append(line)
+    while block and not block[-1].strip():
+        block.pop()
+    for file in found:
+        if prefix + file not in listed:
+            block.append(prefix + file)
+            print(f"  outings/{name}/outing.txt: added {prefix + file} (add \" | Title - comment\" if you like)")
+            changed = True
+    if changed:
+        lines[start + 1:stop] = block
+        with open(path, "w", encoding="utf-8") as f:
+            f.write("\n".join(lines))
+
+
 def main():
     with open(os.path.join(ROOT, "albums.json"), encoding="utf-8") as f:
         albums = json.load(f).get("albums", [])
@@ -190,7 +240,7 @@ def main():
     if os.path.isdir(outings):
         for name in sorted(os.listdir(outings)):
             if os.path.isdir(os.path.join(outings, name)):
-                process_folder(os.path.join(outings, name))
+                sync_outing(name, process_folder(os.path.join(outings, name)))
     print("Rebuilding pages...")
     subprocess.run([sys.executable, os.path.join(ROOT, "build-seo.py")], check=True)
     print("All done. Preview, then commit and push.")
