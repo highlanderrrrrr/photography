@@ -276,9 +276,9 @@ main a:focus-visible, button:focus-visible, .tile:focus-visible {
 .o-facts dt { font-family: var(--sans); font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
 .o-facts dd { margin: 3px 0 0; font-size: 16px; }
 .o-intro { margin-bottom: 20px; }
-.o-sec { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 32px; margin: 0 0 40px; }
-.o-stamp { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12px; color: #c9a26a; padding-top: 8px; border-top: 1px solid #c9a26a; align-self: start; }
-.o-stamp small { display: block; margin-top: 5px; font-size: 11px; color: var(--muted); }
+.o-sec { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; margin: 0 0 44px; }
+.o-stamp { justify-self: start; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12px; color: #c9a26a; padding-top: 8px; border-top: 1px solid #c9a26a; }
+.o-stamp small { display: inline; margin-left: 14px; font-size: 11px; color: var(--muted); }
 .o-body { min-width: 0; }
 .o-body p { font-size: clamp(17px, 0.5vw + 13px, 22px); line-height: 1.7; margin: 0 0 1.1em; color: rgba(255, 255, 255, 0.85); }
 .o-intro p.o-ph, .o-body p.o-ph { font-style: italic; color: var(--muted); border-left: 2px dashed var(--muted); padding-left: 14px; }
@@ -293,7 +293,6 @@ main a:focus-visible, button:focus-visible, .tile:focus-visible {
   .o-cover { grid-template-columns: 1fr; gap: 24px; }
   .o-cover-text { order: -1; }
   .o-facts { grid-template-columns: 1fr 1fr; }
-  .o-sec { grid-template-columns: 1fr; gap: 10px; }
 }
 
 .outing-map { margin: 8px 0 44px; }
