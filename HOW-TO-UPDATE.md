@@ -58,6 +58,9 @@ Delete the file from `images/<album>/`, then run `python3 update-site.py`.
 - Photos in `images/outings/<name>/` are added to `photos:` automatically. Album photos
   (`the-streets/...`) can be listed too.
 - Rows: three photos fill the width; one or two are centered at the same height.
+- Several paragraphs under one `##` time line: the photos are spread between them, in time
+  order, in whole rows of three (text, photos, text, photos...). Keep the intro to 2-3 sentences
+  so photos start near the top.
 
 ## Map links (GPS)
 Photos keep their GPS location, and the full-screen viewer shows "View on map" for them.

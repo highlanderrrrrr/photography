@@ -345,7 +345,9 @@ def capture_time(key):
         from PIL import Image
         with Image.open(os.path.join(ROOT, "images", key)) as im:
             stamp = im.getexif().get_ifd(0x8769).get(36867) or im.getexif().get(306)
-        return datetime.strptime(str(stamp).strip()[:19], "%Y:%m:%d %H:%M:%S")
+        stamp = str(stamp).strip()[:19]
+        stamp = stamp[:10].replace("-", ":") + stamp[10:]  # older exports write 2026-10-21 instead of 2026:10:21
+        return datetime.strptime(stamp, "%Y:%m:%d %H:%M:%S")
     except Exception:
         return None
 
@@ -516,14 +518,27 @@ for o in outings:
         out.append(f'        <section class="o-sec{empty}" data-stamp="{esc(stamp)}">')
         out.append(f'          <div class="o-stamp">{esc(stamp)}' + (f'<small>{esc(label)}</small>' if label else "") + '</div>')
         out.append('          <div class="o-body">')
-        out += [f"            <p>{esc(t)}</p>" for t in text]
-        if s["photos"]:
-            start = s["photos"][0]["n"]
-            tiles = []
-            for p in s["photos"]:
-                n += 1
-                tiles.append(tile_html(p, n))
-            out.append(f'            <div class="sec-strip" data-start="{start}" aria-label="Photographs">\n' + "\n".join(tiles) + "\n            </div>")
+        # Several paragraphs: spread the photos between them, in time order, in whole rows of 3
+        # (extra rows go to the first paragraphs). One paragraph or none: all photos after the text.
+        rows = [s["photos"][i:i + 3] for i in range(0, len(s["photos"]), 3)]
+        k = max(len(text), 1)
+        chunks = [[] for _ in range(k)]
+        base, extra = divmod(len(rows), k)
+        r = 0
+        for i in range(k):
+            take = base + (1 if i < extra else 0)
+            chunks[i] = [p for row in rows[r:r + take] for p in row]
+            r += take
+        for i in range(k):
+            if i < len(text):
+                out.append(f"            <p>{esc(text[i])}</p>")
+            if chunks[i]:
+                start = chunks[i][0]["n"]
+                tiles = []
+                for p in chunks[i]:
+                    n += 1
+                    tiles.append(tile_html(p, n))
+                out.append(f'            <div class="sec-strip" data-start="{start}" aria-label="Photographs">\n' + "\n".join(tiles) + "\n            </div>")
         out.append("          </div>")
         out.append("        </section>")
     located = sum(1 for p in shown if "lat" in p)

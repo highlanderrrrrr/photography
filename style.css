@@ -281,6 +281,7 @@ main a:focus-visible, button:focus-visible, .tile:focus-visible {
 .o-stamp small { display: inline; margin-left: 14px; font-size: 11px; color: var(--muted); }
 .o-body { min-width: 0; }
 .o-body p { font-size: clamp(17px, 0.5vw + 13px, 22px); line-height: 1.7; margin: 0 0 1.1em; color: rgba(255, 255, 255, 0.85); }
+.o-body .sec-strip + p { margin-top: 34px; }
 .o-intro p.o-ph, .o-body p.o-ph { font-style: italic; color: var(--muted); border-left: 2px dashed var(--muted); padding-left: 14px; }
 .sec-strip { display: flex; flex-direction: column; gap: 14px; margin: 26px 0 8px; }
 .srow { display: flex; justify-content: center; gap: 14px; }
