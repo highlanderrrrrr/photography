@@ -192,8 +192,8 @@ main a:focus-visible, button:focus-visible, .tile:focus-visible {
   padding: 2rem;
 }
 
-.lb-image { max-width: 94vw; max-height: 84vh; object-fit: contain; }
-.lb-meta-box { margin-top: 1rem; text-align: center; min-height: 2.6rem; }
+.lb-image { max-width: 94vw; max-height: 84vh; object-fit: contain; flex: 0 1 auto; min-height: 0; } /* shrinks when the text below needs room */
+.lb-meta-box { margin-top: 1rem; text-align: center; min-height: 2.6rem; flex: none; }
 .lb-caption { margin: 0; font-size: 19px; font-weight: 500; letter-spacing: 0; font-variant-numeric: lining-nums; }
 /* Camera details in a plain sans with even, lining numbers: the thin serif's
    old-style figures look broken and hard to read at small sizes on black. */
