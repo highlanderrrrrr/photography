@@ -1,37 +1,49 @@
-title: Pleasanton Main Street Before Opening
-date: 2026-10-30
+title: Downtown San Mateo - A Gray Morning Walk
+date: 2026-10-21
 gear: Nikon D7500, 35mm f/1.8
-summary: A Friday morning on Main Street before the stores opened: a half-empty, slightly eerie downtown, and an hour of sitting by crosswalks waiting for people to walk into the frame.
-cover: outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-82.jpg
-light: Overcast, blue between the clouds
-where: Main Street, downtown Pleasanton
-frames: 134
+summary: An overcast Wednesday morning in downtown San Mateo with the 35mm: a city just waking up, a walk documenting what I saw, and 20 minutes on a planter by a crosswalk.
+cover: the-streets/2026-10-21-san-mateo-41.jpg
+light: Flat overcast
+where: Downtown San Mateo
+frames: 135
 photos:
-outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-82.jpg | Two White Dogs - A man crosses Main at Neal with his two dogs, the patios still closed behind him.
-outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-03.jpg | Not Open Yet - Patio tables set and umbrellas still tied shut on Main Street.
-outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-07.jpg | Along for the Ride - A skeleton sits on a tandem bike while the cyclists take a coffee break.
-the-streets/2026-10-30-pleasenton-16_1.jpg
-outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-18.jpg | The Bell Roof - The corner building on Main under a heavy morning sky.
-the-streets/2026-10-30-pleasenton-27_1.jpg
-misc/2026-10-30-pleasenton-29_1.jpg
-outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-31.jpg | Between Buildings - A narrow passage off Main, in black and white.
-outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-33.jpg | Delivery - A worker stacks boxes behind the closed red umbrellas.
-outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-36.jpg | Red Fleece - A man adjusts his glasses as he walks the empty sidewalk.
-outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-44.jpg | Under the Flag - A woman walks a small white dog beneath the awning.
-outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-48.jpg | Giants Fan - A woman with a cane walks past the planters in an SF hoodie.
-outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-53.jpg | In Step - A woman and her black dog matching stride across Main.
-faces/2026-10-30-pleasenton-56_1.jpg
-the-streets/2026-10-30-pleasenton-58_1.jpg
-outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-65.jpg | Morning Walk - A man and his retriever pass the uniform truck.
-outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-68.jpg | Crossing - A couple crosses under a big sky and the first red leaves.
-outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-75.jpg | Brick Wall - A long brick wall, one figure crouched at the end of it.
+the-streets/2026-10-21-san-mateo-41.jpg
+the-streets/2026-10-21-san-mateo-65.jpg
+outings/downtown-san-mateo-gray-morning/2026-10-21-san-mateo-04.jpg | Under the Arcade - A man in a black beanie walks the long covered sidewalk, water bottle in hand.
+outings/downtown-san-mateo-gray-morning/2026-10-21-san-mateo-05.jpg | Coffee and a Phone - Heading up a quiet sidewalk under the HiroNori sign.
+outings/downtown-san-mateo-gray-morning/2026-10-21-san-mateo-07.jpg | Corner Regulars - Two older men talking on a planter at the corner.
+outings/downtown-san-mateo-gray-morning/2026-10-21-san-mateo-08.jpg | Signs Down the Block - Shop signs stacked along a brick sidewalk.
+outings/downtown-san-mateo-gray-morning/2026-10-21-san-mateo-09.jpg | Socks and Sandals - A man in a bucket hat walks past patio tables still under their covers.
+outings/downtown-san-mateo-gray-morning/2026-10-21-san-mateo-15.jpg | Reflection - The street mirrored in a café tabletop.
+outings/downtown-san-mateo-gray-morning/2026-10-21-san-mateo-16.jpg | Painted Street - Waves of blue, red and green on a block given over to tables.
+outings/downtown-san-mateo-gray-morning/2026-10-21-san-mateo-17.jpg | Low on the Waves - The painted street from ground level, a man crossing at the far end.
+outings/downtown-san-mateo-gray-morning/2026-10-21-san-mateo-18.jpg | Second Avenue - One man eating at a picnic table on an empty morning sidewalk.
+outings/downtown-san-mateo-gray-morning/2026-10-21-san-mateo-23.jpg | Arches - A silver Bentley outside a cream arched facade, people working inside.
+outings/downtown-san-mateo-gray-morning/2026-10-21-san-mateo-27.jpg | The Barrel - A red front and an empty patio, one man at the door.
+outings/downtown-san-mateo-gray-morning/2026-10-21-san-mateo-35.jpg | No One Yet - Bistro chairs set out on an empty sidewalk.
+outings/downtown-san-mateo-gray-morning/2026-10-21-san-mateo-69.jpg | Window Dressing - Shop windows lit for Halloween, skeletons hanging in the glass.
+outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-03.jpg
+outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-07.jpg
+outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-18.jpg
+outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-31.jpg
+outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-33.jpg
+outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-36.jpg
+outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-44.jpg
+outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-48.jpg
+outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-53.jpg
 outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-64.jpg
+outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-65.jpg
+outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-68.jpg
+outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-75.jpg
+outings/pleasanton-main-street-before-opening/2026-10-30-pleasenton-82.jpg
 ---
-I usually skip places like Pleasanton: too polished for me, I'd rather shoot somewhere with more grit. This time I went anyway, a Friday morning on Main Street with the 35mm.
+I went to downtown San Mateo to come back with a few good photos. A Wednesday morning in late October, with the 35mm on the D7500.
 
-## 8:34 a.m. | Main Street
-Between 8 and 9 the street was half dead. Most stores were still closed, which gave it a slightly eerie feel, but there was still some life: deliveries, a few people out walking, and with Halloween the next day, a skeleton on a bike and someone in a yellow costume.
+## 9:01 a.m. | Third and Fourth Avenue
+It stayed overcast and dim the whole morning, and the city was just waking up. Not many people out, so not many subjects, at least none I could find.
 
-I walked Main Street up and down and fished: pick a spot, set the zoom, focus and exposure, sit 10 to 20 minutes, and wait for someone to walk into the frame. Then move to the next spot.
+So I walked Third and Fourth and the blocks in between, photographing whatever I thought was kind of cool. Mostly a record of what downtown looked like that morning.
 
-Crosswalks turned out to be the best spots. It sounds simple, but a few of the crossings came out nicely. On some I raised the camera on purpose to put the people at the bottom under the sky: cloudy, with blue between the clouds, overcast but not gloomy. The man with his two dogs on the cover was the last crossing I shot.
+My two favorite frames came from sitting still: 15 or 20 minutes on a planter by a crosswalk on San Mateo Drive, maybe longer, shooting whoever crossed.
+
+## Oct 30, 8:31 a.m.
