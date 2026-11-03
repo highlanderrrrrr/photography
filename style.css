@@ -328,3 +328,6 @@ main a:focus-visible, button:focus-visible, .tile:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .tile img, .collection img { transition: none; }
 }
+
+/* Second homepage section (homepage2 in albums.json) */
+.home-label { margin: 72px 0 18px; font-family: var(--sans); font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); }

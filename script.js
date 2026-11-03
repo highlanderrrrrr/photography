@@ -4,6 +4,8 @@
 // albums.json
 //   "albums":   album folders under images/, in menu order
 //   "homepage": the Work page, one "album/file" per line, in display order
+//   "homepage2": optional second section under the first (e.g. color photos),
+//   with "homepage2Label" as its small heading
 // images/<album>/album.json
 //   title, cover, and photos: {"file", "caption"?, "w"?, "h"?}
 //   w/h (pixel size) let rows lay out before images load; without them
@@ -17,6 +19,7 @@
 
 let albums = [];
 let homepage = [];
+let homepage2 = [];
 let currentList = [];
 let currentIndex = 0;
 const exifCache = new Map();
@@ -29,6 +32,8 @@ const views = {
   contact: document.getElementById('contact-view')
 };
 const homeStrips = document.getElementById('home-strips');
+const homeStrips2 = document.getElementById('home-strips-2');
+const homeLabel2 = document.getElementById('home-label-2');
 const albumStrips = document.getElementById('album-strips');
 const albumTitleEl = document.getElementById('album-title');
 const collectionsGrid = document.getElementById('collections-grid');
@@ -179,6 +184,9 @@ fetch('albums.json')
     }))).then((loaded) => {
       albums = loaded.filter(Boolean);
       homepage = resolveHomepage(Array.isArray(payload) ? null : payload.homepage);
+      homepage2 = !Array.isArray(payload) && Array.isArray(payload.homepage2) && payload.homepage2.length ? resolveHomepage(payload.homepage2) : [];
+      homeLabel2.textContent = (!Array.isArray(payload) && payload.homepage2Label) || '';
+      homeLabel2.hidden = !homepage2.length;
       route();
     });
   })
@@ -252,8 +260,11 @@ function route() {
 
   if (view === 'work') {
     document.title = 'Lee Sagi — Photography';
-    if (!homeStrips.childElementCount) buildStrips(homeStrips, homepage);
+    const allHome = homepage.concat(homepage2);
+    if (!homeStrips.childElementCount) buildStrips(homeStrips, homepage, allHome, 0);
+    if (homepage2.length && !homeStrips2.childElementCount) buildStrips(homeStrips2, homepage2, allHome, homepage.length);
     layoutStrips(homeStrips);
+    layoutStrips(homeStrips2);
   } else if (view === 'collections') {
     document.title = 'Collections — Lee Sagi';
     if (!collectionsGrid.childElementCount) buildCollections();
@@ -394,7 +405,7 @@ function setSource(img, candidates) {
 let resizeTimer;
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => { layoutStrips(homeStrips); layoutStrips(albumStrips); outingStrips.forEach(layoutStrips); secStrips.forEach(layoutSecStrip); }, 80);
+  resizeTimer = setTimeout(() => { layoutStrips(homeStrips); layoutStrips(homeStrips2); layoutStrips(albumStrips); outingStrips.forEach(layoutStrips); secStrips.forEach(layoutSecStrip); }, 80);
 });
 
 // ---------- Lightbox ----------

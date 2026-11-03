@@ -10,6 +10,7 @@ Everything runs from the website folder in Terminal:
 4. Optional: open `images/<album>/album.json` and add a caption to the new line:
    `"caption": "Title - comment",` then run `python3 update-site.py` again.
 5. Optional: to show it on the homepage, add `"<album>/<file>"` to the `homepage` list in `albums.json`.
+   Black-and-white photos go in `homepage`, color photos in `homepage2` (shown under the "Color" label). Keep each list a multiple of 3 so every row has three photos.
 6. Preview, commit and push (below).
 
 `update-site.py` removes GPS location, shrinks the file to 2400px, makes the
