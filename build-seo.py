@@ -674,7 +674,7 @@ write("robots.txt", f"User-agent: *\nAllow: /\n\nSitemap: {SITE}/sitemap.xml\n")
 # ---------- llms.txt ----------
 lines = [f"# {NAME} Photography", "", f"> Photographs by {NAME}. {FACTS}", "", ABOUT, "",
          f"Instagram: {SAME_AS[0]}", f"Threads: {SAME_AS[1]}", f"YouTube (Overland Out & About): {SAME_AS[2]}",
-         "Contact: harbor.lens.studio@gmail.com", "", "## Collections", ""]
+         "Contact: lee.sagi.photography@gmail.com", "", "## Collections", ""]
 for a in albums:
     lines.append(f"- [{a['title']}]({SITE}/albums/{a['folder']}/): {len(a['photos'])} photographs")
 if outings:
