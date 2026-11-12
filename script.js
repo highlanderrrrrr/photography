@@ -446,6 +446,28 @@ async function getPhotoMeta(photo) {
   return meta;
 }
 
+// Viewer controls (2026-11-12): caption, arrows and X show when a photo opens,
+// fade after UI_HIDE_MS, and come back on tap/click (toggle) or mouse move.
+const UI_HIDE_MS = 3000;
+let uiTimer = null;
+let uiShownAt = 0;
+function showUI() {
+  if (lightbox.classList.contains('lb-ui-hidden')) uiShownAt = Date.now();
+  lightbox.classList.remove('lb-ui-hidden');
+  clearTimeout(uiTimer);
+  uiTimer = setTimeout(hideUI, UI_HIDE_MS);
+}
+function hideUI() {
+  clearTimeout(uiTimer);
+  // keep the controls up while the mouse rests on them
+  if (lightbox.querySelector('.lb-meta-box a:hover, .lb-close:hover, .lb-nav:hover')) { uiTimer = setTimeout(hideUI, UI_HIDE_MS); return; }
+  lightbox.classList.add('lb-ui-hidden');
+}
+function toggleUI() {
+  // a click right after the mouse brought the controls back keeps them up
+  if (lightbox.classList.contains('lb-ui-hidden') || Date.now() - uiShownAt < 700) showUI(); else hideUI();
+}
+
 function openLightbox(list, index) {
   currentList = list;
   currentIndex = index;
@@ -456,6 +478,7 @@ function openLightbox(list, index) {
 
 function closeLightbox() {
   lightbox.hidden = true;
+  clearTimeout(uiTimer);
   document.body.style.overflow = '';
 }
 
@@ -475,6 +498,7 @@ function trackPhoto(photo) {
 async function showCurrent() {
   const photo = currentList[currentIndex];
   trackPhoto(photo);
+  showUI();
   lbImage.alt = photo.caption || '';
   setSource(lbImage, [photo.file, photo.large]);
   lbCaption.textContent = photo.caption || '';
@@ -507,11 +531,23 @@ function showPrev() { currentIndex = (currentIndex - 1 + currentList.length) % c
 document.getElementById('lb-close').addEventListener('click', closeLightbox);
 document.getElementById('lb-next').addEventListener('click', showNext);
 document.getElementById('lb-prev').addEventListener('click', showPrev);
-lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+// The photo fills the screen, so a tap or click on it shows or hides the caption and controls.
+// Close with the X or Esc.
+lightbox.addEventListener('click', (e) => {
+  if (e.target === lightbox || e.target === lbImage || e.target.closest('.lb-meta-box') && !e.target.closest('a')) toggleUI();
+});
+let lastMove = 0;
+lightbox.addEventListener('pointermove', (e) => {
+  if (e.pointerType !== 'mouse') return; // phones: only taps toggle
+  const now = Date.now();
+  if (now - lastMove < 150) return;
+  lastMove = now;
+  showUI();
+});
 
 document.addEventListener('keydown', (e) => {
   if (lightbox.hidden) return;
-  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'Escape') { closeLightbox(); return; }
   if (e.key === 'ArrowRight') showNext();
   if (e.key === 'ArrowLeft') showPrev();
 });
