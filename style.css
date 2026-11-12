@@ -294,8 +294,8 @@ main a:focus-visible, button:focus-visible, .tile:focus-visible {
 .o-cover--wide { align-items: center; }
 .o-cover-img { display: block; justify-self: start; cursor: zoom-in; background: none; width: auto; height: auto; }
 .o-cover-img img { display: block; width: auto; max-width: 100%; height: auto; max-height: 82vh; }
-.o-eyebrow { font-family: var(--sans); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
-.o-cover h1 { font-weight: 400; font-size: clamp(36px, 4.2vw, 64px); line-height: 1.06; margin: 14px 0 24px; text-wrap: balance; text-align: left; }
+/* No label line above the outing title (2026-11-12); the title starts the text column. */
+.o-cover h1 { font-weight: 400; font-size: clamp(36px, 4.2vw, 64px); line-height: 1.06; margin: 0 0 24px; text-wrap: balance; text-align: left; }
 .o-dek { font-style: italic; font-size: clamp(18px, 0.9vw + 10px, 22px); line-height: 1.5; color: rgba(255, 255, 255, 0.84); margin: 0 0 30px; max-width: 36ch; }
 .o-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 28px; margin: 0; padding-top: 20px; border-top: 1px solid var(--line); }
 .o-facts dt { font-family: var(--sans); font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
