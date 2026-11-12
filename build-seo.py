@@ -43,10 +43,10 @@ TODAY = date.today().isoformat()
 ABOUT = ("I photograph what I run into. Backcountry tracks and desert camps, the streets near home, "
          "people I know, and more. No rime or reason, just photos I like.")
 FACTS = "Based in the East Bay, California. Shoots on a Nikon D7500. Mostly black and white, street."
+# Social links: Instagram and Threads only (2026-11-11)
 SAME_AS = [
     "https://www.instagram.com/btbw666/",
     "https://www.threads.com/@btbw666",
-    "https://www.youtube.com/@OverlandOutAndAbout",
 ]
 
 
@@ -673,7 +673,7 @@ write("robots.txt", f"User-agent: *\nAllow: /\n\nSitemap: {SITE}/sitemap.xml\n")
 
 # ---------- llms.txt ----------
 lines = [f"# {NAME} Photography", "", f"> Photographs by {NAME}. {FACTS}", "", ABOUT, "",
-         f"Instagram: {SAME_AS[0]}", f"Threads: {SAME_AS[1]}", f"YouTube (Overland Out & About): {SAME_AS[2]}",
+         f"Instagram: {SAME_AS[0]}", f"Threads: {SAME_AS[1]}",
          "Contact: lee.sagi.photography@gmail.com", "", "## Collections", ""]
 for a in albums:
     lines.append(f"- [{a['title']}]({SITE}/albums/{a['folder']}/): {len(a['photos'])} photographs")
