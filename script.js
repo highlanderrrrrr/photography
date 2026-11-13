@@ -268,6 +268,7 @@ function route() {
   } else if (view === 'collections') {
     document.title = 'Collections — Lee Sagi';
     if (!collectionsGrid.childElementCount) buildCollections();
+    layoutStrips(collectionsGrid);
   } else if (view === 'album') {
     document.title = album.title + ' — Lee Sagi';
     albumTitleEl.textContent = album.title;
@@ -284,22 +285,34 @@ function route() {
 
 // ---------- Collections ----------
 
+// Collection covers in the same justified rows as the Work page (2026-11-12),
+// each with its name on the photo.
 function buildCollections() {
-  albums.forEach((album) => {
+  collectionsGrid.innerHTML = '';
+  albums.forEach((album, index) => {
+    const c = album.cover || {};
     const a = document.createElement('a');
-    a.className = 'collection';
+    a.className = 'tile collection-tile';
     a.href = '#album/' + encodeURIComponent(album.id);
+    a.setAttribute('aria-label', album.title + ', ' + album.photos.length + (album.photos.length === 1 ? ' photo' : ' photos'));
+    a.photo = { ratio: c.ratio || 0, thumb: c.thumb, large: c.large, file: c.file };
+    a.style.setProperty('--ar', c.ratio || 1.5);
     const img = document.createElement('img');
     img.alt = '';
-    img.loading = 'lazy';
-    if (album.cover) setSource(img, [album.cover.large, album.cover.file]);
+    img.decoding = 'async';
+    img.loading = index < 3 ? 'eager' : 'lazy';
+    if (!c.ratio) {
+      img.addEventListener('load', () => {
+        if (!img.naturalWidth) return;
+        a.photo.ratio = img.naturalWidth / img.naturalHeight;
+        a.style.setProperty('--ar', a.photo.ratio);
+        layoutStrips(collectionsGrid);
+      }, { once: true });
+    }
     const name = document.createElement('span');
     name.className = 'collection-name';
     name.textContent = album.title;
-    const count = document.createElement('span');
-    count.className = 'collection-count';
-    count.textContent = album.photos.length + (album.photos.length === 1 ? ' photo' : ' photos');
-    a.append(img, name, count);
+    a.append(img, name);
     collectionsGrid.appendChild(a);
   });
 }
@@ -405,7 +418,7 @@ function setSource(img, candidates) {
 let resizeTimer;
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => { layoutStrips(homeStrips); layoutStrips(homeStrips2); layoutStrips(albumStrips); outingStrips.forEach(layoutStrips); secStrips.forEach(layoutSecStrip); }, 80);
+  resizeTimer = setTimeout(() => { layoutStrips(homeStrips); layoutStrips(homeStrips2); layoutStrips(albumStrips); layoutStrips(collectionsGrid); outingStrips.forEach(layoutStrips); secStrips.forEach(layoutSecStrip); }, 80);
 });
 
 // ---------- Lightbox ----------

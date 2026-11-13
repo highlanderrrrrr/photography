@@ -1,0 +1,11 @@
+{
+  "title": "Ghost",
+  "cover": "DSC_2972.jpg",
+  "photos": [
+    {"file": "DSC_2972.jpg", "caption": "Ghost - Backlit on the dog bed.", "w": 1080, "h": 782},
+    {"file": "DSC_2153.JPG", "caption": "Floor Level - Ghost, unimpressed.", "w": 2400, "h": 1600},
+    {"file": "DSC_2167.JPG", "caption": "Those Eyes - Ghost in window light.", "w": 2400, "h": 1600},
+    {"file": "DSC_2387.jpeg", "caption": "Shotgun - Ghost watching from the back seat.", "w": 1280, "h": 854},
+    {"file": "2026-10-30-pleasenton-29_1.jpg", "caption": "Sit - Only one of them is expected to stay.", "w": 2400, "h": 1655}
+  ]
+}
